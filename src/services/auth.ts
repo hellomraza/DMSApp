@@ -1,10 +1,5 @@
 import store from '../store';
 import { logout } from '../store/slices/authSlice';
-import type {
-  OTPGenerateRequest,
-  OTPValidateRequest,
-  UserData,
-} from '../types/global';
 import { apiService } from './api';
 
 class AuthService {

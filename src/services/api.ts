@@ -1,13 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
 import Config from 'react-native-config';
-import type {
-  DocumentSearchRequest,
-  DocumentTagsRequest,
-  DocumentUploadData,
-  OTPGenerateRequest,
-  OTPValidateRequest,
-  OTPValidateResponse,
-} from '../types/global';
 import { getCurrentToken } from '../utils/auth';
 
 const API_BASE_URL = Config.API_BASE_URL || '';
