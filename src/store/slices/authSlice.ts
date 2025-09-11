@@ -17,10 +17,10 @@ const authSlice = createSlice({
   reducers: {
     loginSuccess: (
       state,
-      action: PayloadAction<{ token: string; userData: UserData }>,
+      action: PayloadAction<{ token: string; userData?: UserData }>,
     ) => {
       state.token = action.payload.token;
-      state.userData = action.payload.userData;
+      state.userData = action.payload.userData || null;
       state.isAuthenticated = true;
       state.error = null;
     },
