@@ -49,8 +49,7 @@ class ApiService {
     const response = await apiClient.post('/generateOTP', data);
     if (!response.data || !response.data.status) {
       throw new Error(
-        'Failed to generate OTP: ' +
-          (response.data?.message || 'Unknown error'),
+        'Failed to generate OTP: ' + (response.data?.data || 'Unknown error'),
       );
     }
     return response;
@@ -63,8 +62,7 @@ class ApiService {
     const response = await apiClient.post('/validateOTP', data);
     if (!response.data || !response.data.status) {
       throw new Error(
-        'Failed to validate OTP: ' +
-          (response.data?.message || 'Unknown error'),
+        'Failed to validate OTP: ' + (response.data?.data || 'Unknown error'),
       );
     }
     return response;
@@ -87,7 +85,7 @@ class ApiService {
     if (!response.data || !response.data.status) {
       throw new Error(
         'Failed to upload document: ' +
-          (response.data?.message || 'Unknown error'),
+          (response.data?.data || 'Unknown error'),
       );
     }
     return response;
@@ -99,7 +97,7 @@ class ApiService {
     if (!response.data || !response.data.status) {
       throw new Error(
         'Failed to search documents: ' +
-          (response.data?.message || 'Unknown error'),
+          (response.data?.data || 'Unknown error'),
       );
     }
     return response;
@@ -111,7 +109,7 @@ class ApiService {
     if (!response.data || !response.data.status) {
       throw new Error(
         'Failed to get document tags: ' +
-          (response.data?.message || 'Unknown error'),
+          (response.data?.data || 'Unknown error'),
       );
     }
     return response;
