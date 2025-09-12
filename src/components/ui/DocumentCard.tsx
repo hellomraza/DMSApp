@@ -1,5 +1,12 @@
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  Dimensions,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 import { fontSize, scale, spacing } from '../../utils/scale';
 
@@ -33,13 +40,14 @@ interface DocumentCardProps {
   isPreviewable: (fileType: string) => boolean;
 }
 
+const { width } = Dimensions.get('window');
+const cardWidth = (width - spacing.md * 3) / 2; // 2 columns with spacing
+
 const DocumentCard: React.FC<DocumentCardProps> = ({
   document,
   isDownloading,
   downloadProgress,
   onPreview,
-  onDownload,
-  isPreviewable,
 }) => {
   // Format file size
   const formatFileSize = (bytes: number): string => {
@@ -52,233 +60,219 @@ const DocumentCard: React.FC<DocumentCardProps> = ({
 
   // Format date
   const formatDate = (dateString: string): string => {
-    return new Date(dateString).toLocaleDateString();
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: '2-digit',
+    });
+  };
+
+  // Get file type icon or show image preview
+  const getFilePreview = () => {
+    if (document.file?.type.startsWith('image/') && document.file.localPath) {
+      return (
+        <Image
+          source={{ uri: `file://${document.file.localPath}` }}
+          style={styles.imagePreview}
+          resizeMode="cover"
+        />
+      );
+    }
+
+    // Default file type icons
+    const fileType = document.file?.type || '';
+    let icon = '📄';
+    if (fileType.includes('pdf')) icon = '📕';
+    else if (fileType.includes('image')) icon = '🖼️';
+    else if (fileType.includes('doc')) icon = '📝';
+    else if (fileType.includes('excel') || fileType.includes('sheet'))
+      icon = '📊';
+
+    return (
+      <View style={styles.fileIcon}>
+        <Text style={styles.fileIconText}>{icon}</Text>
+      </View>
+    );
   };
 
   return (
-    <View style={styles.resultCard}>
-      <View style={styles.resultHeader}>
-        <Text style={styles.resultTitle}>
-          {document.major_head} - {document.minor_head}
-        </Text>
-        <Text style={styles.resultDate}>
-          {formatDate(document.document_date)}
-        </Text>
+    <TouchableOpacity
+      style={styles.card}
+      onPress={() => onPreview(document)}
+      activeOpacity={0.8}
+    >
+      {/* Image/File Preview */}
+      <View style={styles.previewContainer}>
+        {getFilePreview()}
+        {isDownloading && (
+          <View style={styles.downloadingOverlay}>
+            <Text style={styles.downloadingText}>⬇️</Text>
+          </View>
+        )}
       </View>
 
-      {document.file && (
-        <View style={styles.fileInfo}>
-          <View style={styles.fileDetails}>
-            <Text style={styles.fileName}>📄 {document.file.name}</Text>
-            <Text style={styles.fileSize}>
-              {document.file.type} • {formatFileSize(document.file.size)}
-            </Text>
-          </View>
+      {/* Document Info */}
+      <View style={styles.infoContainer}>
+        <Text style={styles.title} numberOfLines={1}>
+          {document.major_head}
+        </Text>
+        <Text style={styles.subtitle} numberOfLines={1}>
+          {document.minor_head}
+        </Text>
+        <Text style={styles.date}>{formatDate(document.document_date)}</Text>
 
-          {/* Preview and Download Actions */}
-          <View style={styles.fileActions}>
-            <TouchableOpacity
-              style={[
-                styles.actionButton,
-                styles.previewButton,
-                !isPreviewable(document.file.type) && styles.disabledButton,
-              ]}
-              onPress={() => onPreview(document)}
-              disabled={!isPreviewable(document.file.type)}
-            >
-              <Text
-                style={[
-                  styles.previewButtonText,
-                  !isPreviewable(document.file.type) &&
-                    styles.disabledButtonText,
-                ]}
-              >
-                👁️ Preview
+        {/* File info */}
+        {document.file && (
+          <Text style={styles.fileInfo} numberOfLines={1}>
+            {formatFileSize(document.file.size)}
+          </Text>
+        )}
+
+        {/* Tags - show max 2 */}
+        {document.tags && document.tags.length > 0 && (
+          <View style={styles.tagsContainer}>
+            {document.tags.slice(0, 2).map((tag, index) => (
+              <View key={index} style={styles.tag}>
+                <Text style={styles.tagText} numberOfLines={1}>
+                  {tag.tag_name}
+                </Text>
+              </View>
+            ))}
+            {document.tags.length > 2 && (
+              <Text style={styles.moreTagsText}>
+                +{document.tags.length - 2}
               </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.actionButton, styles.downloadButton]}
-              onPress={() => onDownload(document)}
-              disabled={isDownloading}
-            >
-              <Text style={styles.actionButtonText}>
-                {isDownloading ? '⬇️ Downloading...' : 'Download'}
-              </Text>
-            </TouchableOpacity>
+            )}
           </View>
+        )}
+      </View>
 
-          {/* Download Progress */}
-          {isDownloading && downloadProgress > 0 && (
-            <View style={styles.progressContainer}>
-              <View
-                style={[styles.progressBar, { width: `${downloadProgress}%` }]}
-              />
-              <Text style={styles.progressText}>{downloadProgress}%</Text>
-            </View>
-          )}
+      {/* Download progress bar */}
+      {isDownloading && downloadProgress > 0 && (
+        <View style={styles.progressContainer}>
+          <View
+            style={[styles.progressBar, { width: `${downloadProgress}%` }]}
+          />
         </View>
       )}
-
-      {document.document_remarks && (
-        <Text style={styles.resultRemarks}>{document.document_remarks}</Text>
-      )}
-
-      {document.tags && document.tags.length > 0 && (
-        <View style={styles.resultTags}>
-          {document.tags.map((tag, index) => (
-            <View key={index} style={styles.resultTag}>
-              <Text style={styles.resultTagText}>{tag.tag_name}</Text>
-            </View>
-          ))}
-        </View>
-      )}
-
-      <Text style={styles.uploadInfo}>
-        Uploaded: {formatDate(document.uploadedAt)} by {document.uploadedBy}
-      </Text>
-    </View>
+    </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
-  resultCard: {
+  card: {
     backgroundColor: '#fff',
-    borderRadius: scale(8),
-    padding: spacing.md,
-    marginBottom: spacing.md,
-    borderWidth: 1,
-    borderColor: '#e1e1e1',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-  },
-  resultHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: spacing.sm,
-  },
-  resultTitle: {
-    fontSize: fontSize.md,
-    fontWeight: 'bold',
-    color: '#2c3e50',
-    flex: 1,
-  },
-  resultDate: {
-    fontSize: fontSize.sm,
-    color: '#7f8c8d',
-  },
-  fileInfo: {
-    backgroundColor: '#f8f9fa',
+    borderRadius: scale(12),
     padding: spacing.sm,
-    borderRadius: scale(4),
-    marginBottom: spacing.sm,
+    marginBottom: spacing.md,
+    marginHorizontal: spacing.xs,
+    width: cardWidth,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  fileDetails: {
-    flex: 1,
-  },
-  fileName: {
-    fontSize: fontSize.base,
-    fontWeight: '600',
-    color: '#2c3e50',
-  },
-  fileSize: {
-    fontSize: fontSize.sm,
-    color: '#7f8c8d',
-    marginTop: spacing.xs,
-  },
-  fileActions: {
-    flexDirection: 'row',
-    marginTop: spacing.sm,
-    gap: spacing.sm,
-  },
-  actionButton: {
-    flex: 1,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    borderRadius: scale(6),
-    alignItems: 'center',
-    borderWidth: 1,
-  },
-  previewButton: {
+  previewContainer: {
+    width: '100%',
+    height: scale(100),
+    borderRadius: scale(8),
     backgroundColor: '#f8f9fa',
-    borderColor: '#3498db',
-  },
-  downloadButton: {
-    backgroundColor: '#3498db',
-    borderColor: '#3498db',
-  },
-  disabledButton: {
-    backgroundColor: '#ecf0f1',
-    borderColor: '#bdc3c7',
-  },
-  previewButtonText: {
-    fontSize: fontSize.sm,
-    fontWeight: '600',
-    color: '#3498db',
-  },
-  actionButtonText: {
-    fontSize: fontSize.sm,
-    fontWeight: '600',
-    color: '#FFFFFF',
-  },
-  disabledButtonText: {
-    color: '#95a5a6',
-  },
-  progressContainer: {
-    marginTop: spacing.sm,
-    backgroundColor: '#ecf0f1',
-    borderRadius: scale(10),
-    height: scale(20),
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: spacing.sm,
     overflow: 'hidden',
     position: 'relative',
   },
-  progressBar: {
+  imagePreview: {
+    width: '100%',
     height: '100%',
-    backgroundColor: '#3498db',
-    borderRadius: scale(10),
+    borderRadius: scale(8),
   },
-  progressText: {
+  fileIcon: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  fileIconText: {
+    fontSize: fontSize.xxl,
+  },
+  downloadingOverlay: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    textAlign: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: scale(8),
+  },
+  downloadingText: {
+    fontSize: fontSize.lg,
+    color: '#fff',
+  },
+  infoContainer: {
+    flex: 1,
+  },
+  title: {
+    fontSize: fontSize.sm,
+    fontWeight: 'bold',
+    color: '#2c3e50',
+    marginBottom: spacing.xs / 2,
+  },
+  subtitle: {
     fontSize: fontSize.xs,
-    color: '#2c3e50',
-    lineHeight: scale(20),
+    color: '#7f8c8d',
+    marginBottom: spacing.xs / 2,
   },
-  resultRemarks: {
-    fontSize: fontSize.base,
-    color: '#2c3e50',
-    marginBottom: spacing.sm,
-    fontStyle: 'italic',
+  date: {
+    fontSize: fontSize.xs,
+    color: '#95a5a6',
+    marginBottom: spacing.xs,
   },
-  resultTags: {
+  fileInfo: {
+    fontSize: fontSize.xs,
+    color: '#7f8c8d',
+    marginBottom: spacing.xs,
+  },
+  tagsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: spacing.xs,
-    marginBottom: spacing.sm,
+    alignItems: 'center',
+    marginTop: spacing.xs / 2,
   },
-  resultTag: {
+  tag: {
     backgroundColor: '#e8f5e8',
-    borderRadius: scale(12),
-    paddingHorizontal: spacing.sm,
+    borderRadius: scale(10),
+    paddingHorizontal: spacing.xs,
     paddingVertical: scale(2),
+    marginRight: spacing.xs / 2,
+    marginBottom: spacing.xs / 2,
   },
-  resultTagText: {
-    fontSize: fontSize.xs,
+  tagText: {
+    fontSize: fontSize.xs - 1,
     color: '#27ae60',
     fontWeight: '500',
   },
-  uploadInfo: {
+  moreTagsText: {
     fontSize: fontSize.xs,
     color: '#95a5a6',
-    marginTop: spacing.sm,
+    fontWeight: '500',
+  },
+  progressContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: scale(3),
+    backgroundColor: '#ecf0f1',
+    borderBottomLeftRadius: scale(12),
+    borderBottomRightRadius: scale(12),
+  },
+  progressBar: {
+    height: '100%',
+    backgroundColor: '#3498db',
+    borderBottomLeftRadius: scale(12),
   },
 });
 
