@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { useDispatch } from 'react-redux';
 import { CustomButton, CustomTextInput } from '../components/ui';
-import { useGenerateOTP, useValidateOTP } from '../hooks/useApi';
+import { useGenerateOTP, useTimer, useValidateOTP } from '../hooks';
 import { loginSuccess } from '../store/slices/authSlice';
 import { fontSize, scale, spacing } from '../utils/scale';
 
@@ -25,24 +25,18 @@ const OTPVerificationScreen = ({ navigation, route }: any) => {
   const dispatch = useDispatch();
   const validateOTPMutation = useValidateOTP();
   const generateOTPMutation = useGenerateOTP();
-  const [timer, setTimer] = useState(60);
-  const [canResend, setCanResend] = useState(false);
   const otpInputRef = useRef<TextInput>(null);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTimer(prevTimer => {
-        if (prevTimer <= 1) {
-          setCanResend(true);
-          clearInterval(interval);
-          return 0;
-        }
-        return prevTimer - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, []);
+  // Use custom timer hook
+  const {
+    time: timer,
+    isCompleted: canResend,
+    restart: restartTimer,
+    formatTime,
+  } = useTimer({
+    initialTime: 60,
+    autoStart: true,
+  });
 
   useEffect(() => {
     // Focus on OTP input when screen loads
@@ -50,14 +44,6 @@ const OTPVerificationScreen = ({ navigation, route }: any) => {
       otpInputRef.current.focus();
     }
   }, []);
-
-  const formatTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs
-      .toString()
-      .padStart(2, '0')}`;
-  };
 
   const validateOTP = (otp: string): boolean => {
     return otp.length === 6 && /^[0-9]+$/.test(otp);
@@ -128,21 +114,8 @@ const OTPVerificationScreen = ({ navigation, route }: any) => {
         onSuccess: _response => {
           Alert.alert('Success', 'OTP has been resent to your mobile number');
 
-          // Reset timer
-          setTimer(60);
-          setCanResend(false);
-
-          // Restart timer
-          const interval = setInterval(() => {
-            setTimer(prevTimer => {
-              if (prevTimer <= 1) {
-                setCanResend(true);
-                clearInterval(interval);
-                return 0;
-              }
-              return prevTimer - 1;
-            });
-          }, 1000);
+          // Restart timer with 60 seconds
+          restartTimer(60);
         },
         onError: (error: any) => {
           Alert.alert(
