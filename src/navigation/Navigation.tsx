@@ -5,6 +5,7 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { useAuth } from '../hooks/redux';
 import DashboardScreen from '../screens/DashboardScreen';
+import FileUploadComponent from '../screens/FileUploadScreen';
 import LoginScreen from '../screens/LoginScreen';
 import OTPVerificationScreen from '../screens/OTPVerificationScreen';
 
@@ -37,7 +38,7 @@ const Navigation = () => {
           },
         }}
       >
-        {!isAuthenticated ? (
+        {isAuthenticated ? (
           <>
             <Stack.Screen
               name="Login"
@@ -63,6 +64,14 @@ const Navigation = () => {
               component={DashboardScreen}
               options={{
                 title: 'Dashboard',
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen
+              name="FileUpload"
+              component={FileUploadComponent}
+              options={{
+                title: 'Upload Document',
                 headerShown: false,
               }}
             />

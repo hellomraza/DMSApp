@@ -39,7 +39,7 @@ const DashboardScreen = ({ navigation }: any) => {
   };
 
   const navigateToUpload = () => {
-    navigation.navigate('DocumentUpload');
+    navigation.navigate('FileUpload');
   };
 
   const navigateToSearch = () => {
