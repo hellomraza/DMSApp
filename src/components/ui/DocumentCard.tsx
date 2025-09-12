@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 
 import { fontSize, scale, spacing } from '../../utils/scale';
+import PDFCardPreview from './PDFCardPreview';
 
 interface Tag {
   tag_name: string;
@@ -67,7 +68,7 @@ const DocumentCard: React.FC<DocumentCardProps> = ({
     });
   };
 
-  // Get file type icon or show image preview
+  // Get file type icon or show image/PDF preview
   const getFilePreview = () => {
     if (document.file?.type.startsWith('image/') && document.file.localPath) {
       return (
@@ -77,6 +78,40 @@ const DocumentCard: React.FC<DocumentCardProps> = ({
           resizeMode="cover"
         />
       );
+    }
+
+    // PDF preview
+    if (document.file?.type === 'application/pdf') {
+      // If we have a local path, show PDF preview
+      if (document.file.localPath) {
+        return (
+          <View style={styles.pdfPreviewContainer}>
+            <PDFCardPreview
+              source={{ uri: `file://${document.file.localPath}` }}
+              style={styles.pdfPreview}
+            />
+          </View>
+        );
+      }
+      // If we have a URL, show PDF preview
+      else if (
+        document.file.name &&
+        (document.file.name.startsWith('http') ||
+          document.file.name.includes('.pdf'))
+      ) {
+        return (
+          <View style={styles.pdfPreviewContainer}>
+            <PDFCardPreview
+              source={{
+                uri: document.file.name.startsWith('http')
+                  ? document.file.name
+                  : `https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf`,
+              }}
+              style={styles.pdfPreview}
+            />
+          </View>
+        );
+      }
     }
 
     // Default file type icons
@@ -188,6 +223,16 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     borderRadius: scale(8),
+  },
+  pdfPreviewContainer: {
+    width: '100%',
+    height: '100%',
+    borderRadius: scale(8),
+    overflow: 'hidden',
+  },
+  pdfPreview: {
+    width: '100%',
+    height: '100%',
   },
   fileIcon: {
     justifyContent: 'center',
