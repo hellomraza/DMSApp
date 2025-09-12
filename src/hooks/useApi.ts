@@ -1,21 +1,21 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { apiService } from '../services/api';
+import { apiSwitcher } from '../services/apiSwitcher';
 import { loginSuccess } from '../store/slices/authSlice';
 import { useAuth } from './redux';
 
 // Auth Hooks
 export const useGenerateOTP = () => {
   return useMutation({
-    mutationFn: (data: OTPGenerateRequest) => apiService.generateOTP(data),
+    mutationFn: (data: OTPGenerateRequest) => apiSwitcher.generateOTP(data),
   });
 };
 
 export const useValidateOTP = () => {
   const { dispatch } = useAuth();
   return useMutation({
-    mutationFn: (data: OTPValidateRequest) => apiService.validateOTP(data),
-    onSuccess: response => {
-      if (response.data.token && response.data.token) {
+    mutationFn: (data: OTPValidateRequest) => apiSwitcher.validateOTP(data),
+    onSuccess: (response: any) => {
+      if (response.data.token) {
         dispatch(loginSuccess({ token: response.data.token }));
       }
     },
@@ -29,8 +29,8 @@ export const useValidateOTP = () => {
 export const useUploadDocument = () => {
   return useMutation({
     mutationFn: ({ file, data }: { file: any; data: DocumentUploadData }) =>
-      apiService.uploadDocument(file, data),
-    onSuccess: response => {
+      apiSwitcher.uploadDocument(file, data),
+    onSuccess: (response: any) => {
       console.log('Document uploaded successfully:', response.data);
     },
     onError: (error: any) => {
@@ -42,8 +42,8 @@ export const useUploadDocument = () => {
 export const useSearchDocuments = () => {
   return useMutation({
     mutationFn: (data: DocumentSearchRequest) =>
-      apiService.searchDocuments(data),
-    onSuccess: response => {
+      apiSwitcher.searchDocuments(data),
+    onSuccess: (response: any) => {
       console.log('Documents searched successfully:', response.data);
     },
     onError: (error: any) => {
@@ -58,7 +58,7 @@ export const useDocumentTags = (
 ) => {
   return useQuery({
     queryKey: ['documentTags', data],
-    queryFn: () => apiService.getDocumentTags(data),
+    queryFn: () => apiSwitcher.getDocumentTags(data),
     enabled,
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
