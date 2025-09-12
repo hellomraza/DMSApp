@@ -2,6 +2,8 @@ export { default as CustomButton } from './CustomButton';
 export { default as CustomTextInput } from './CustomTextInput';
 export { default as FileSearchComponent } from './FileSearchComponent';
 export { default as FileUploadComponent } from './FileUploadComponent';
+export { default as PDFCardPreview } from './PDFCardPreview';
+export { default as PDFViewer } from './PDFViewer';
 
 // File Search Component Parts
 export { default as DocumentCard } from './DocumentCard';
