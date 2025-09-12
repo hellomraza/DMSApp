@@ -101,6 +101,8 @@ const DocumentList: React.FC<DocumentListProps> = ({
             />
           )}
           keyExtractor={item => item.id}
+          numColumns={2}
+          columnWrapperStyle={styles.row}
           scrollEnabled={false}
           showsVerticalScrollIndicator={false}
         />
@@ -135,6 +137,10 @@ const styles = StyleSheet.create({
   },
   documentsSection: {
     flex: 1,
+  },
+  row: {
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.xs,
   },
   resultsHeader: {
     flexDirection: 'row',
