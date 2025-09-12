@@ -1,16 +1,14 @@
 import React, { useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
-  TouchableOpacity,
   View,
 } from 'react-native';
+import { CustomButton, CustomTextInput } from '../components/ui';
 import { useGenerateOTP } from '../hooks/useApi';
 
 const LoginScreen = ({ navigation }: any) => {
@@ -75,33 +73,26 @@ const LoginScreen = ({ navigation }: any) => {
           </View>
 
           <View style={styles.form}>
-            <Text style={styles.label}>Mobile Number</Text>
-            <TextInput
-              style={styles.input}
+            <CustomTextInput
+              label="Mobile Number"
               placeholder="Enter your mobile number"
               value={formData.mobile_number}
-              onChangeText={text =>
+              onChangeText={(text: string) =>
                 setFormData({ ...formData, mobile_number: text })
               }
               keyboardType="numeric"
               maxLength={10}
               editable={!generateOTPMutation.isPending}
+              labelStyle={styles.label}
+              inputStyle={styles.input}
             />
 
-            <TouchableOpacity
-              style={[
-                styles.button,
-                generateOTPMutation.isPending && styles.buttonDisabled,
-              ]}
+            <CustomButton
+              title="Send OTP"
               onPress={handleGenerateOTP}
+              loading={generateOTPMutation.isPending}
               disabled={generateOTPMutation.isPending}
-            >
-              {generateOTPMutation.isPending ? (
-                <ActivityIndicator color="#ffffff" />
-              ) : (
-                <Text style={styles.buttonText}>Send OTP</Text>
-              )}
-            </TouchableOpacity>
+            />
           </View>
         </View>
       </ScrollView>
@@ -145,32 +136,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#2c3e50',
-    marginBottom: 8,
   },
   input: {
     height: 50,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    paddingHorizontal: 16,
     fontSize: 16,
-    backgroundColor: '#ffffff',
-    marginBottom: 24,
-  },
-  button: {
-    height: 50,
-    backgroundColor: '#3498db',
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  buttonDisabled: {
-    backgroundColor: '#bdc3c7',
-  },
-  buttonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
   },
 });
 
