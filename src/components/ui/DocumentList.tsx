@@ -9,6 +9,7 @@ import {
 
 import { fontSize, scale, spacing } from '../../utils/scale';
 import DocumentCard from './DocumentCard';
+import DocumentListSkeleton from './DocumentListSkeleton';
 
 interface Tag {
   tag_name: string;
@@ -57,11 +58,7 @@ const DocumentList: React.FC<DocumentListProps> = ({
   isPreviewable,
 }) => {
   if (isLoading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <Text style={styles.loadingText}>Loading documents...</Text>
-      </View>
-    );
+    return <DocumentListSkeleton />;
   }
 
   return (
@@ -125,16 +122,6 @@ const DocumentList: React.FC<DocumentListProps> = ({
 };
 
 const styles = StyleSheet.create({
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: spacing.xl,
-  },
-  loadingText: {
-    fontSize: fontSize.base,
-    color: '#666',
-  },
   documentsSection: {
     flex: 1,
   },
