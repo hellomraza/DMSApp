@@ -78,8 +78,8 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({ onFileUpload }) => {
   const fetchTags = useCallback(async () => {
     try {
       const response = await apiSwitcher.getDocumentTags({ term: '' });
-      if (response && response.data) {
-        setAvailableTags(response.data);
+      if (response && response.data?.data) {
+        setAvailableTags(response.data?.data || []);
       }
     } catch (error) {
       console.error('Error fetching tags:', error);
@@ -466,6 +466,43 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({ onFileUpload }) => {
             <Text style={styles.addTagText}>+ Add Tag</Text>
           </TouchableOpacity>
         </View>
+
+        {/* Available Tags Section */}
+        {availableTags.length > 0 && (
+          <View style={styles.availableTagsSection}>
+            <Text style={styles.availableTagsLabel}>
+              Available Tags (tap to add):
+            </Text>
+            <View style={styles.availableTagsContainer}>
+              {availableTags
+                .filter(
+                  tag =>
+                    !selectedTags.find(
+                      selected => selected.tag_name === tag.tag_name,
+                    ),
+                )
+                .map((tag, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.availableTagChip}
+                    onPress={() => addTag(tag)}
+                  >
+                    <Text style={styles.availableTagText}>{tag.tag_name}</Text>
+                  </TouchableOpacity>
+                ))}
+              {availableTags.filter(
+                tag =>
+                  !selectedTags.find(
+                    selected => selected.tag_name === tag.tag_name,
+                  ),
+              ).length === 0 && (
+                <Text style={styles.noAvailableTagsText}>
+                  All tags have been selected
+                </Text>
+              )}
+            </View>
+          </View>
+        )}
       </View>
 
       {/* Remarks */}
@@ -776,6 +813,40 @@ const styles = StyleSheet.create({
   modalCloseText: {
     color: '#fff',
     fontWeight: '600',
+  },
+  availableTagsSection: {
+    marginTop: spacing.md,
+    paddingTop: spacing.sm,
+    borderTopWidth: scale(1),
+    borderTopColor: '#eee',
+  },
+  availableTagsLabel: {
+    fontSize: fontSize.sm,
+    fontWeight: '600',
+    marginBottom: spacing.sm,
+    color: '#666',
+  },
+  availableTagsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.xs,
+  },
+  availableTagChip: {
+    backgroundColor: '#f8f9fa',
+    paddingHorizontal: scale(10),
+    paddingVertical: scale(5),
+    borderRadius: scale(14),
+    borderWidth: scale(1),
+    borderColor: '#007AFF',
+  },
+  availableTagText: {
+    color: '#007AFF',
+    fontSize: fontSize.sm,
+  },
+  noAvailableTagsText: {
+    fontSize: fontSize.sm,
+    color: '#999',
+    fontStyle: 'italic',
   },
 });
 
