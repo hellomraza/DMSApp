@@ -1,11 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import {
-  Alert,
-  Linking,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-} from 'react-native';
+import { Alert, Linking, StyleSheet, View } from 'react-native';
 import RNFS from 'react-native-fs';
 
 import { apiSwitcher } from '../../services/apiSwitcher';
@@ -393,8 +387,8 @@ const FileSearchComponent: React.FC<FileSearchComponentProps> = ({
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView}>
+    <>
+      <View style={styles.scrollView}>
         <SearchHeader
           searchText={searchText}
           onSearchTextChange={setSearchText}
@@ -438,7 +432,7 @@ const FileSearchComponent: React.FC<FileSearchComponentProps> = ({
           onDownloadAll={handleDownloadAll}
           isPreviewable={isPreviewable}
         />
-      </ScrollView>
+      </View>
 
       <DocumentPreviewModal
         visible={showPreviewModal}
@@ -446,7 +440,7 @@ const FileSearchComponent: React.FC<FileSearchComponentProps> = ({
         onClose={() => setShowPreviewModal(false)}
         onDownload={handleDownload}
       />
-    </SafeAreaView>
+    </>
   );
 };
 
