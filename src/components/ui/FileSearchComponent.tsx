@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Alert, Linking, StyleSheet, View } from 'react-native';
 import RNFS from 'react-native-fs';
 
+import { useFocusEffect } from '@react-navigation/native';
 import { apiSwitcher } from '../../services/apiSwitcher';
 import { spacing } from '../../utils/scale';
 import DocumentList from './DocumentList';
@@ -33,11 +34,13 @@ interface SearchResult {
 interface FileSearchComponentProps {
   onSearchResults?: (results: SearchResult[]) => void;
   refreshTrigger?: number;
+  navigation?: any;
 }
 
 const FileSearchComponent: React.FC<FileSearchComponentProps> = ({
   onSearchResults,
   refreshTrigger,
+  navigation,
 }) => {
   // Search filters state
   const [majorHead, setMajorHead] = useState<'Personal' | 'Professional' | ''>(
@@ -75,6 +78,50 @@ const FileSearchComponent: React.FC<FileSearchComponentProps> = ({
   const [allDocuments, setAllDocuments] = useState<SearchResult[]>([]);
   const [isLoadingDocs, setIsLoadingDocs] = useState(true);
 
+  const loadAvailableTags = useCallback(async () => {
+    try {
+      const response = await apiSwitcher.getDocumentTags({ term: '' });
+      console.log('Loaded tags:', response.data);
+      if (response.data && Array.isArray(response.data?.data)) {
+        setAvailableTags(response.data?.data);
+      }
+    } catch (error) {
+      console.error('Failed to load tags:', error);
+    }
+  }, []);
+
+  // Load all documents on initial load
+  const loadAllDocuments = useCallback(async () => {
+    setIsLoadingDocs(true);
+    try {
+      // Search with empty filters to get all documents
+      const response = await apiSwitcher.searchDocuments({});
+
+      if (response.data && response.data.data) {
+        const documents = response.data.data?.data as SearchResult[];
+        console.log('Loaded documents:', documents);
+        setAllDocuments(documents);
+        setSearchResults(documents);
+
+        if (onSearchResults) {
+          onSearchResults(documents);
+        }
+
+        console.log(`Loaded ${documents.length} documents`);
+      } else {
+        setAllDocuments([]);
+        setSearchResults([]);
+        console.log('No documents found');
+      }
+    } catch (error: any) {
+      console.error('Failed to load documents:', error);
+      setAllDocuments([]);
+      setSearchResults([]);
+    } finally {
+      setIsLoadingDocs(false);
+    }
+  }, [onSearchResults]);
+
   // Load available tags and all documents on component mount
   useEffect(() => {
     const loadInitialData = async () => {
@@ -83,6 +130,16 @@ const FileSearchComponent: React.FC<FileSearchComponentProps> = ({
     };
     loadInitialData();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useFocusEffect(
+    useCallback(() => {
+      const loadInitialData = async () => {
+        await loadAvailableTags();
+        await loadAllDocuments();
+      };
+      loadInitialData();
+    }, [loadAllDocuments, loadAvailableTags]),
+  );
 
   // Handle refresh trigger from parent component
   useEffect(() => {
@@ -161,50 +218,6 @@ const FileSearchComponent: React.FC<FileSearchComponentProps> = ({
     allDocuments,
     onSearchResults,
   ]);
-
-  const loadAvailableTags = useCallback(async () => {
-    try {
-      const response = await apiSwitcher.getDocumentTags({ term: '' });
-      console.log('Loaded tags:', response.data);
-      if (response.data && Array.isArray(response.data?.data)) {
-        setAvailableTags(response.data?.data);
-      }
-    } catch (error) {
-      console.error('Failed to load tags:', error);
-    }
-  }, []);
-
-  // Load all documents on initial load
-  const loadAllDocuments = useCallback(async () => {
-    setIsLoadingDocs(true);
-    try {
-      // Search with empty filters to get all documents
-      const response = await apiSwitcher.searchDocuments({});
-
-      if (response.data && response.data.data) {
-        const documents = response.data.data?.data as SearchResult[];
-        console.log('Loaded documents:', documents);
-        setAllDocuments(documents);
-        setSearchResults(documents);
-
-        if (onSearchResults) {
-          onSearchResults(documents);
-        }
-
-        console.log(`Loaded ${documents.length} documents`);
-      } else {
-        setAllDocuments([]);
-        setSearchResults([]);
-        console.log('No documents found');
-      }
-    } catch (error: any) {
-      console.error('Failed to load documents:', error);
-      setAllDocuments([]);
-      setSearchResults([]);
-    } finally {
-      setIsLoadingDocs(false);
-    }
-  }, [onSearchResults]);
 
   // Helper functions
   const hasFilters = (): boolean => {
@@ -400,6 +413,16 @@ const FileSearchComponent: React.FC<FileSearchComponentProps> = ({
     );
   };
 
+  // Handle PDF full screen opening
+  const handleOpenPDFFullscreen = useCallback(
+    (source: any, title: string) => {
+      if (navigation) {
+        navigation.navigate('PDFPreview', { source, title });
+      }
+    },
+    [navigation],
+  );
+
   return (
     <>
       <View style={styles.scrollView}>
@@ -453,6 +476,7 @@ const FileSearchComponent: React.FC<FileSearchComponentProps> = ({
         document={previewDocument}
         onClose={() => setShowPreviewModal(false)}
         onDownload={handleDownload}
+        onOpenPDFFullscreen={navigation ? handleOpenPDFFullscreen : undefined}
       />
     </>
   );
