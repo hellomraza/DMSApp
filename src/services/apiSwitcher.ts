@@ -59,8 +59,7 @@ class ApiSwitcher {
     fileName: string,
   ): Promise<string> {
     if (this.useMockApi()) {
-      // For mock API, return the local path if file exists
-      throw new Error('Download not available in mock mode');
+      return mockApiService.downloadDocument(documentId, fileName);
     }
     return apiService.downloadDocument(documentId, fileName);
   }
