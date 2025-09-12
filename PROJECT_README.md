@@ -4,13 +4,14 @@ A comprehensive mobile application built with React Native that allows users to 
 
 ## 🚀 Features
 
-### Authentication
+### Authentication ✅
 
 - **OTP-Based Login**: Secure login using mobile number and OTP verification
 - **Token-based Authentication**: JWT token storage for authenticated requests
-- **Session Management**: Persistent login state with AsyncStorage
+- **Session Management**: Persistent login state with Redux Persist
+- **Auto Rehydration**: Automatic state restoration on app restart
 
-### Document Management (To be implemented)
+### Document Management 🔄
 
 - **Upload Documents**: Upload files with metadata and tags
 - **Search & Filter**: Advanced search functionality with multiple criteria
@@ -22,29 +23,103 @@ A comprehensive mobile application built with React Native that allows users to 
 
 ```
 src/
-├── components/          # Reusable UI components
-├── screens/            # Application screens
+├── components/         # Reusable UI components
+├── hooks/             # Custom React hooks
+│   ├── redux.ts       # Typed Redux hooks
+│   └── useApi.ts      # React Query API hooks
+├── screens/           # Application screens
 │   ├── LoginScreen.tsx
 │   ├── OTPVerificationScreen.tsx
 │   └── DashboardScreen.tsx
-├── services/           # API and business logic
-│   ├── api.ts          # API service with endpoints
-│   └── auth.ts         # Authentication service
-├── navigation/         # Navigation configuration
+├── services/          # API and business logic
+│   ├── api.ts         # API service with endpoints
+│   └── auth.ts        # Authentication service
+├── store/             # Redux store configuration
+│   ├── index.ts       # Store setup with persist
+│   └── slices/        # Redux slices
+│       └── authSlice.ts
+├── navigation/        # Navigation configuration
 │   └── Navigation.tsx
-├── types/             # TypeScript type definitions
-│   └── index.ts
-└── utils/             # Helper functions and utilities
-    └── helpers.ts
+├── types/            # TypeScript type definitions
+│   ├── global.d.ts   # Global type definitions
+│   ├── types.ts      # Additional types
+│   └── index.ts      # Type exports
+└── utils/            # Helper functions and utilities
+    └── auth.ts       # Authentication utilities
 ```
 
 ## 🛠️ Technology Stack
 
-- **React Native**: 0.81.1
+- **React Native**: 0.81.1 - Mobile app framework
 - **TypeScript**: Type-safe development
-- **React Navigation**: Screen navigation
-- **Axios**: HTTP client for API calls
-- **AsyncStorage**: Local data persistence
+- **React Navigation**: 7.1.17 - Screen navigation
+- **React Query**: 5.87.4 - Server state management and caching
+- **Redux Toolkit**: 2.4.0 - Client state management
+- **Redux Persist**: 6.0.0 - State persistence
+- **Axios**: 1.11.0 - HTTP client for API calls
+
+## 🏗️ Architecture Overview
+
+### State Management Strategy
+
+1. **Redux Toolkit**: Handles authentication state (token, user data, login status)
+2. **Redux Persist**: Persists authentication state across app restarts
+3. **React Query**: Manages all API calls, caching, and server state
+
+### Benefits of This Architecture
+
+- **Separation of Concerns**: Redux for client state, React Query for server state
+- **Better Performance**: React Query's intelligent caching reduces network requests
+- **Offline Support**: Redux Persist ensures auth state survives app restarts
+- **Type Safety**: Full TypeScript support throughout the app
+- **Developer Experience**: Built-in dev tools for debugging
+
+## 📡 API Integration
+
+### Base Configuration
+
+```typescript
+const API_BASE_URL = 'https://apis.allsoft.co/api/documentManagement';
+```
+
+### Available Hooks
+
+#### Authentication
+
+- `useGenerateOTP()` - Generate OTP for mobile number
+- `useValidateOTP()` - Validate OTP and authenticate
+
+#### Document Management
+
+- `useUploadDocument()` - Upload documents with metadata
+- `useSearchDocuments()` - Search documents with filters
+- `useDocumentTags()` - Fetch available tags (with caching)
+
+### API Service Features
+
+- **Automatic Token Injection**: Tokens added to headers automatically
+- **Error Handling**: Centralized error processing
+- **Request/Response Interceptors**: For logging and error handling
+- **TypeScript Support**: Fully typed requests and responses
+
+## 🔐 Authentication Flow
+
+```mermaid
+graph TD
+    A[App Start] --> B[Redux Persist Rehydration]
+    B --> C{Token Exists?}
+    C -->|Yes| D[Dashboard]
+    C -->|No| E[Login Screen]
+    E --> F[Enter Mobile Number]
+    F --> G[Generate OTP API]
+    G --> H[OTP Verification Screen]
+    H --> I[Validate OTP API]
+    I --> J{Valid OTP?}
+    J -->|Yes| K[Store Token in Redux]
+    J -->|No| L[Show Error]
+    K --> M[Navigate to Dashboard]
+    L --> H
+```
 
 ## 🔧 Setup & Installation
 

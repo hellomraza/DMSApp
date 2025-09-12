@@ -1,8 +1,221 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# Document Management System (DMS) - React Native App
 
-# Getting Started
+A comprehensive mobile application built with React Native that allows users to manage documents effectively with features like upload, tagging, searching, preview, and download capabilities.
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+## 🚀 Features
+
+### Authentication
+
+- **OTP-Based Login**: Secure login using mobile number and OTP verification
+- **Token-based Authentication**: JWT token storage for authenticated requests
+- **Session Management**: Persistent login state with Redux Persist
+- **Auto Rehydration**: Automatic state restoration on app restart
+
+### Document Management
+
+- **Upload Documents**: Upload files with metadata and tags
+- **Search & Filter**: Advanced search functionality with multiple criteria
+- **Preview Documents**: In-app document preview capabilities
+- **Download Documents**: Download files to device storage
+- **Tag Management**: Organize documents with custom tags
+
+## 🛠️ Technology Stack
+
+- **React Native**: 0.81.1 - Mobile app framework
+- **TypeScript**: Type-safe development
+- **React Navigation**: 7.1.17 - Screen navigation
+- **React Query**: 5.87.4 - Server state management and caching
+- **Redux Toolkit**: 2.4.0 - Client state management
+- **Redux Persist**: 6.0.0 - State persistence
+- **Axios**: 1.11.0 - HTTP client for API calls
+
+## 📁 Project Structure
+
+```
+src/
+├── components/         # Reusable UI components
+├── hooks/             # Custom React hooks
+│   ├── redux.ts       # Typed Redux hooks
+│   └── useApi.ts      # React Query API hooks
+├── screens/           # Application screens
+│   ├── LoginScreen.tsx
+│   ├── OTPVerificationScreen.tsx
+│   └── DashboardScreen.tsx
+├── services/          # API and business logic
+│   ├── api.ts         # API service with endpoints
+│   └── auth.ts        # Authentication service
+├── store/             # Redux store configuration
+│   ├── index.ts       # Store setup with persist
+│   └── slices/        # Redux slices
+│       └── authSlice.ts
+├── navigation/        # Navigation configuration
+│   └── Navigation.tsx
+├── types/            # TypeScript type definitions
+│   ├── global.d.ts   # Global type definitions
+│   ├── types.ts      # Additional types
+│   └── index.ts      # Type exports
+└── utils/            # Helper functions and utilities
+    └── auth.ts       # Authentication utilities
+```
+
+## 🔧 Setup & Installation
+
+### Prerequisites
+
+- Node.js (>= 16)
+- React Native CLI
+- Android Studio (for Android development)
+- Xcode (for iOS development - macOS only)
+
+### Installation Steps
+
+1. **Clone the repository**
+
+   ```bash
+   git clone <repository-url>
+   cd DMSApp
+   ```
+
+2. **Install dependencies**
+
+   ```bash
+   yarn install
+   # or
+   npm install
+   ```
+
+3. **iOS Setup** (macOS only)
+
+   ```bash
+   cd ios
+   bundle install
+   bundle exec pod install
+   cd ..
+   ```
+
+4. **Start Metro Server**
+
+   ```bash
+   yarn start
+   # or
+   npm start
+   ```
+
+5. **Run the app**
+
+   For Android:
+
+   ```bash
+   yarn android
+   # or
+   npm run android
+   ```
+
+   For iOS:
+
+   ```bash
+   yarn ios
+   # or
+   npm run ios
+   ```
+
+## 📱 App Architecture
+
+### State Management
+
+- **Redux Toolkit**: Handles authentication state (token, user data, login status)
+- **Redux Persist**: Persists authentication state across app restarts
+- **React Query**: Manages all API calls, caching, and server state
+
+### API Integration
+
+- **Base URL**: `https://apis.allsoft.co/api/documentManagement`
+- **Authentication**: Token-based with automatic header injection
+- **Error Handling**: Centralized error handling with user-friendly messages
+- **Caching**: Intelligent caching with React Query
+
+### Navigation Flow
+
+1. **Splash/Loading**: App initialization with state rehydration
+2. **Login Screen**: Mobile number input and OTP generation
+3. **OTP Verification**: OTP input and validation
+4. **Dashboard**: Main app interface with document management features
+
+## 🔐 Authentication Flow
+
+1. User enters mobile number
+2. OTP is generated and sent via SMS
+3. User enters received OTP
+4. OTP is validated, and JWT token is received
+5. Token is stored in Redux store and persisted
+6. User is navigated to the main dashboard
+
+## 📡 API Endpoints
+
+### Authentication
+
+- `POST /generateOTP` - Generate OTP for mobile number
+- `POST /validateOTP` - Validate OTP and get access token
+
+### Document Management
+
+- `POST /saveDocumentEntry` - Upload new document
+- `POST /searchDocumentEntry` - Search documents
+- `POST /documentTags` - Get available tags
+
+## 🧪 Testing
+
+Run tests with:
+
+```bash
+yarn test
+# or
+npm test
+```
+
+## 📚 Type Safety
+
+The project uses TypeScript with comprehensive type definitions:
+
+- **Global Types**: Defined in `src/types/global.d.ts`
+- **API Types**: Request/Response interfaces
+- **Component Props**: Strongly typed component interfaces
+- **Redux Types**: Typed actions and state
+
+## 🔍 Development Tools
+
+### Available Scripts
+
+- `yarn start` - Start Metro server
+- `yarn android` - Run Android app
+- `yarn ios` - Run iOS app
+- `yarn lint` - Run ESLint
+- `yarn test` - Run tests
+- `npx tsc --noEmit` - Type checking
+
+### Debugging
+
+- **React Native Debugger**: For Redux DevTools and React DevTools
+- **Flipper**: For network requests and performance monitoring
+- **React Query DevTools**: For inspecting cache and queries
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run tests and linting
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+---
+
+## 🚀 Getting Started
+
+> **Note**: Make sure you have completed the [React Native Environment Setup](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
 
 ## Step 1: Start Metro
 
@@ -82,16 +295,83 @@ You've successfully run and modified your React Native App. :partying_face:
 - If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
 - If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
 
-# Troubleshooting
+### Quick Start Commands
 
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
+Start Metro:
 
-# Learn More
+```bash
+yarn start
+```
 
-To learn more about React Native, take a look at the following resources:
+Run on Android:
 
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+```bash
+yarn android
+```
+
+Run on iOS:
+
+```bash
+yarn ios
+```
+
+## 📱 App Features in Detail
+
+### Current Implementation
+
+- ✅ OTP-based authentication system
+- ✅ Redux Toolkit + Redux Persist for state management
+- ✅ React Query for API calls and caching
+- ✅ TypeScript for type safety
+- ✅ Responsive UI with React Native components
+
+### Upcoming Features
+
+- 🔄 Document upload functionality
+- 🔄 Document search and filtering
+- 🔄 Document preview and download
+- 🔄 Tag management system
+- 🔄 Offline support
+
+## 🔧 Troubleshooting
+
+### Common Issues
+
+1. **Metro Server Issues**
+
+   ```bash
+   npx react-native start --reset-cache
+   ```
+
+2. **Android Build Issues**
+
+   ```bash
+   cd android
+   ./gradlew clean
+   cd ..
+   yarn android
+   ```
+
+3. **iOS Build Issues**
+
+   ```bash
+   cd ios
+   rm -rf Pods
+   bundle exec pod install
+   cd ..
+   yarn ios
+   ```
+
+4. **TypeScript Errors**
+   ```bash
+   npx tsc --noEmit
+   ```
+
+For more troubleshooting tips, visit the [React Native Troubleshooting Guide](https://reactnative.dev/docs/troubleshooting).
+
+## 📚 Learn More
+
+- [React Native Documentation](https://reactnative.dev/docs/getting-started)
+- [Redux Toolkit Documentation](https://redux-toolkit.js.org/)
+- [React Query Documentation](https://tanstack.com/query/latest)
+- [TypeScript Documentation](https://www.typescriptlang.org/docs/)

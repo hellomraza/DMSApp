@@ -1,53 +1,159 @@
 # Type Definitions Documentation
 
-This document describes the type system used in the DMS (Document Management System) React Native application.
+This document describes the comprehensive type system used in the DMS (Document Management System) React Native application.
 
 ## 📁 File Structure
 
 ```
 src/types/
-├── global.d.ts          # Main type definitions file
-├── react-native.d.ts    # React Native specific declarations
-├── index.ts            # Re-exports for backward compatibility
-└── types.ts            # Barrel export file
+├── global.d.ts          # Main type definitions file with all types
+├── types.ts            # Additional type utilities and exports
+└── index.ts            # Barrel export file for clean imports
 ```
 
-## 🔧 Migration from Interfaces to Types
+## 🔧 Type System Architecture
 
-All interfaces have been converted to types and moved to `global.d.ts` for better type management and consistency.
+The application uses TypeScript with comprehensive type definitions to ensure type safety across all components, API calls, and state management.
 
-### Before (Interfaces)
+### Key Benefits
 
-```typescript
-export interface UserData {
-  mobile_number: string;
-  token: string;
-}
-```
-
-### After (Types)
-
-```typescript
-export type UserData = {
-  mobile_number: string;
-  token: string;
-};
-```
+- **Compile-time Safety**: Catch errors before runtime
+- **IntelliSense Support**: Enhanced developer experience
+- **Refactoring Safety**: Confident code changes
+- **API Contract Enforcement**: Typed request/response interfaces
 
 ## 📋 Type Categories
 
 ### 1. Authentication Types
 
-- `UserData` - User information
-- `LoginFormData` - Login form data
-- `OTPFormData` - OTP form data
-- `OTPGenerateRequest` - OTP generation API request
-- `OTPValidateRequest` - OTP validation API request
-- `OTPValidateResponse` - OTP validation API response
+```typescript
+// User data structure
+type UserData = {
+  mobile_number: string;
+  token: string;
+};
 
-### 2. Document Types
+// Form data types
+type LoginFormData = {
+  mobile_number: string;
+};
 
-- `Tag` - Document tag structure
+type OTPFormData = {
+  otp: string;
+};
+
+// API request/response types
+type OTPGenerateRequest = {
+  mobile_number: string;
+};
+
+type OTPValidateRequest = {
+  mobile_number: string;
+  otp: string;
+};
+
+type OTPValidateResponse = {
+  token: string;
+  success: boolean;
+  message: string;
+};
+```
+
+### 2. Redux State Types
+
+```typescript
+// Authentication state
+type AuthState = {
+  token: string | null;
+  userData: UserData | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  error: string | null;
+};
+
+// Root state type
+type RootState = {
+  auth: AuthState;
+};
+```
+
+### 3. Navigation Types
+
+```typescript
+// Root stack parameter list
+type RootStackParamList = {
+  Login: undefined;
+  OTPVerification: {
+    mobile_number: string;
+  };
+  Dashboard: undefined;
+  DocumentUpload: undefined;
+  DocumentSearch: undefined;
+  DocumentList: undefined;
+};
+```
+
+### 4. Document Types
+
+```typescript
+// Document tag structure
+type Tag = {
+  tag_name: string;
+};
+
+// Document entity
+type Document = {
+  id: string;
+  major_head: string;
+  minor_head: string;
+  document_date: string;
+  document_remarks: string;
+  tags: Tag[];
+  uploaded_by: string;
+  document_url: string;
+  created_at: string;
+  updated_at: string;
+};
+
+// API request types
+type DocumentUploadData = {
+  major_head: string;
+  minor_head: string;
+  document_date: string;
+  document_remarks: string;
+  tags: string[];
+};
+
+type DocumentSearchRequest = {
+  search_query?: string;
+  major_head?: string;
+  minor_head?: string;
+  tags?: string[];
+  date_from?: string;
+  date_to?: string;
+};
+
+type DocumentTagsRequest = {
+  search_query?: string;
+};
+```
+
+### 5. API Response Types
+
+```typescript
+// Generic API response wrapper
+type ApiResponse<T> = {
+  success: boolean;
+  message: string;
+  data?: T;
+};
+
+// Specific response types
+type DocumentListResponse = ApiResponse<Document[]>;
+type DocumentUploadResponse = ApiResponse<{ document_id: string }>;
+type TagsResponse = ApiResponse<Tag[]>;
+```
+
 - `Document` - Complete document information
 - `DocumentUploadData` - Document upload payload
 - `DocumentSearchRequest` - Document search parameters
