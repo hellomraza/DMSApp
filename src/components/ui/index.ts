@@ -6,6 +6,7 @@ export { default as FileUploadComponent } from './FileUploadComponent';
 // File Search Component Parts
 export { default as DocumentCard } from './DocumentCard';
 export { default as DocumentList } from './DocumentList';
+export { default as DocumentListSkeleton } from './DocumentListSkeleton';
 export { default as DocumentPreviewModal } from './DocumentPreviewModal';
 export { default as SearchFilters } from './SearchFilters';
 export { default as SearchHeader } from './SearchHeader';
