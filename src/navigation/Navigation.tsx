@@ -5,7 +5,6 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { useAuth } from '../hooks/redux';
 import DashboardScreen from '../screens/DashboardScreen';
-import FileSearchScreen from '../screens/FileSearchScreen';
 import FileUploadScreen from '../screens/FileUploadScreen';
 import LoginScreen from '../screens/LoginScreen';
 import OTPVerificationScreen from '../screens/OTPVerificationScreen';
@@ -73,14 +72,6 @@ const Navigation = () => {
               component={FileUploadScreen}
               options={{
                 title: 'File Upload',
-                headerShown: true,
-              }}
-            />
-            <Stack.Screen
-              name="FileSearch"
-              component={FileSearchScreen}
-              options={{
-                title: 'File Search',
                 headerShown: true,
               }}
             />

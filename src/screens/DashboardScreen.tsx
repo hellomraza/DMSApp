@@ -8,12 +8,13 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import FileSearchComponent from '../components/ui/FileSearchComponent';
 import { useAuth } from '../hooks/redux';
 import { logout } from '../store/slices/authSlice';
 import { fontSize, scale, spacing } from '../utils/scale';
 
 const DashboardScreen = ({ navigation }: any) => {
-  const { userData, dispatch } = useAuth();
+  const { dispatch } = useAuth();
 
   const handleLogout = () => {
     Alert.alert('Logout', 'Are you sure you want to logout?', [
@@ -42,67 +43,37 @@ const DashboardScreen = ({ navigation }: any) => {
     navigation.navigate('FileUpload');
   };
 
-  const navigateToSearch = () => {
-    navigation.navigate('FileSearch');
-  };
-
-  const navigateToDocuments = () => {
-    navigation.navigate('DocumentList');
+  const handleSearchResults = (results: any[]) => {
+    console.log('Search results received:', results);
+    // Handle search results if needed
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Document Management</Text>
-          <Text style={styles.subtitle}>Welcome back!</Text>
-          {userData && (
-            <Text style={styles.userInfo}>
-              Mobile: {userData.mobile_number}
-            </Text>
-          )}
-        </View>
+    <SafeAreaView style={styles.container} edges={['top']}>
+      {/* Navbar */}
+      <View style={styles.navbar}>
+        <Text style={styles.navbarTitle}>File Search</Text>
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Text style={styles.logoutButtonText}>Logout</Text>
+        </TouchableOpacity>
+      </View>
 
-        <View style={styles.menuContainer}>
-          <TouchableOpacity style={styles.menuItem} onPress={navigateToUpload}>
-            <Text style={styles.menuIcon}>📄</Text>
-            <Text style={styles.menuTitle}>Upload Document</Text>
-            <Text style={styles.menuDescription}>
-              Upload and tag new documents
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.menuItem} onPress={navigateToSearch}>
-            <Text style={styles.menuIcon}>🔍</Text>
-            <Text style={styles.menuTitle}>Search Documents</Text>
-            <Text style={styles.menuDescription}>
-              Find documents by tags or content
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={navigateToDocuments}
-          >
-            <Text style={styles.menuIcon}>📋</Text>
-            <Text style={styles.menuTitle}>My Documents</Text>
-            <Text style={styles.menuDescription}>
-              View and manage your documents
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.menuItem, styles.logoutItem]}
-            onPress={handleLogout}
-          >
-            <Text style={styles.menuIcon}>🚪</Text>
-            <Text style={[styles.menuTitle, styles.logoutText]}>Logout</Text>
-            <Text style={[styles.menuDescription, styles.logoutText]}>
-              Sign out of your account
-            </Text>
-          </TouchableOpacity>
-        </View>
+      {/* File Search Content */}
+      <ScrollView
+        style={styles.content}
+        contentContainerStyle={{ paddingBottom: scale(80) }}
+      >
+        <FileSearchComponent onSearchResults={handleSearchResults} />
       </ScrollView>
+
+      {/* Floating Upload Button */}
+      <TouchableOpacity
+        style={styles.floatingButton}
+        onPress={navigateToUpload}
+        activeOpacity={0.8}
+      >
+        <Text style={styles.floatingButtonText}>+</Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 };
@@ -112,37 +83,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f8f9fa',
   },
-  scrollView: {
-    flex: 1,
-  },
-  header: {
-    padding: spacing.lg,
-    backgroundColor: '#3498db',
+  navbar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-  },
-  title: {
-    fontSize: fontSize.xxxl,
-    fontWeight: 'bold',
-    color: '#ffffff',
-    marginBottom: spacing.sm,
-  },
-  subtitle: {
-    fontSize: fontSize.md,
-    color: '#ecf0f1',
-    marginBottom: spacing.xs,
-  },
-  userInfo: {
-    fontSize: fontSize.base,
-    color: '#ecf0f1',
-  },
-  menuContainer: {
     padding: spacing.md,
-  },
-  menuItem: {
-    backgroundColor: '#ffffff',
-    borderRadius: scale(12),
-    padding: spacing.md,
-    marginBottom: spacing.md,
+    backgroundColor: '#3498db',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -152,30 +98,51 @@ const styles = StyleSheet.create({
     shadowRadius: scale(3),
     elevation: 3,
   },
-  logoutItem: {
-    borderWidth: 1,
-    borderColor: '#e74c3c',
-    backgroundColor: '#fdf2f2',
-  },
-  menuIcon: {
-    fontSize: fontSize.huge,
-    marginBottom: spacing.sm,
-    textAlign: 'center',
-  },
-  menuTitle: {
+  navbarTitle: {
     fontSize: fontSize.lg,
     fontWeight: 'bold',
-    color: '#2c3e50',
-    textAlign: 'center',
-    marginBottom: spacing.xs,
+    color: '#ffffff',
   },
-  menuDescription: {
-    fontSize: fontSize.base,
-    color: '#7f8c8d',
-    textAlign: 'center',
+  logoutButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: scale(6),
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
   },
-  logoutText: {
-    color: '#e74c3c',
+  logoutButtonText: {
+    fontSize: fontSize.sm,
+    color: '#ffffff',
+    fontWeight: '600',
+  },
+  content: {
+    flex: 1,
+  },
+  floatingButton: {
+    position: 'absolute',
+    bottom: spacing.xl,
+    alignSelf: 'center',
+    width: scale(60),
+    height: scale(60),
+    borderRadius: scale(30),
+    backgroundColor: '#3498db',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: scale(4),
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: scale(6),
+    elevation: 8,
+  },
+  floatingButtonText: {
+    fontSize: fontSize.xxl,
+    color: '#ffffff',
+    fontWeight: 'bold',
+    lineHeight: fontSize.xxl,
   },
 });
 
