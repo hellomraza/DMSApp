@@ -211,41 +211,115 @@ The project uses TypeScript with comprehensive type definitions:
 
 This project is licensed under the MIT License.
 
----
+## 📖 Documentation
 
-## 🚀 Getting Started
+For detailed information about specific aspects of the project, refer to these documentation files:
+
+### Development & Architecture
+
+- [📋 Development Guide](./DEVELOPMENT_GUIDE.md) - Complete development workflow and architecture
+- [🔧 Type Definitions](./TYPE_DEFINITIONS.md) - TypeScript types and interfaces
+- [📊 Scaling Guide](./src/utils/SCALING_GUIDE.md) - UI scaling and responsive design
+
+### API & Services
+
+- [🌐 API Documentation](./API_DOCUMENTATION.md) - API endpoints and React Query hooks
+- [� Mock API Implementation](./MOCK_API_IMPLEMENTATION.md) - Mock API setup for development
+
+### Features Implementation
+
+- [📁 File Upload Implementation](./FILE_UPLOAD_IMPLEMENTATION.md) - File upload component details
+- [🔍 File Search Implementation](./FILE_SEARCH_IMPLEMENTATION.md) - Search functionality with preview
+- [📱 React Native FS Integration](./REACT_NATIVE_FS_INTEGRATION.md) - File system integration
+- [⏱️ Timer Hook Guide](./src/hooks/TIMER_HOOK_GUIDE.md) - Custom timer hooks
+
+### Components
+
+- [🧩 UI Components](./src/components/ui/README.md) - Reusable UI components
+- [📤 File Upload Component](./src/components/ui/FILE_UPLOAD_README.md) - File upload component documentation
+
+## 🚀 Quick Start
 
 > **Note**: Make sure you have completed the [React Native Environment Setup](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
 
-## Step 1: Start Metro
+### Start Metro:
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
-
-To start the Metro dev server, run the following command from the root of your React Native project:
-
-```sh
-# Using npm
-npm start
-
-# OR using Yarn
+```bash
 yarn start
 ```
 
-## Step 2: Build and run your app
+### Run on Android:
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
-
-### Android
-
-```sh
-# Using npm
-npm run android
-
-# OR using Yarn
+```bash
 yarn android
 ```
 
-### iOS
+### Run on iOS:
+
+```bash
+yarn ios
+```
+
+## 📱 App Features in Detail
+
+### Current Implementation
+
+- ✅ OTP-based authentication system
+- ✅ Redux Toolkit + Redux Persist for state management
+- ✅ React Query for API calls and caching
+- ✅ TypeScript for type safety
+- ✅ Responsive UI with React Native components
+
+### Upcoming Features
+
+- 🔄 Document upload functionality
+- 🔄 Document search and filtering
+- 🔄 Document preview and download
+- 🔄 Tag management system
+- 🔄 Offline support
+
+## 🔧 Troubleshooting
+
+### Common Issues
+
+1. **Metro Server Issues**
+
+   ```bash
+   npx react-native start --reset-cache
+   ```
+
+2. **Android Build Issues**
+
+   ```bash
+   cd android
+   ./gradlew clean
+   cd ..
+   yarn android
+   ```
+
+3. **iOS Build Issues**
+
+   ```bash
+   cd ios
+   rm -rf Pods
+   bundle exec pod install
+   cd ..
+   yarn ios
+   ```
+
+4. **TypeScript Errors**
+   ```bash
+   npx tsc --noEmit
+   ```
+
+For more troubleshooting tips, visit the [React Native Troubleshooting Guide](https://reactnative.dev/docs/troubleshooting).
+
+## 📚 Learn More
+
+- [React Native Documentation](https://reactnative.dev/docs/getting-started)
+- [Redux Toolkit Documentation](https://redux-toolkit.js.org/)
+- [React Query Documentation](https://tanstack.com/query/latest)
+- [TypeScript Documentation](https://www.typescriptlang.org/docs/)
 
 For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
 
