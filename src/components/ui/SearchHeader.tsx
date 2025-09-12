@@ -45,16 +45,19 @@ const SearchHeader: React.FC<SearchHeaderProps> = ({
         )}
       </View>
 
+      {/* Results Count */}
+      {searchText.length > 0 && (
+        <Text style={styles.resultsCount}>
+          {resultsCount} {resultsCount === 1 ? 'document' : 'documents'} found
+        </Text>
+      )}
+
       {/* Filters Toggle Button */}
       <TouchableOpacity style={styles.filtersToggle} onPress={onToggleFilters}>
         <Text style={styles.filtersToggleText}>
           {showFilters ? '📁 Hide Filters' : '📁 Show Filters'}
         </Text>
       </TouchableOpacity>
-
-      <Text style={styles.resultsCount}>
-        {resultsCount} document{resultsCount !== 1 ? 's' : ''} found
-      </Text>
     </View>
   );
 };
