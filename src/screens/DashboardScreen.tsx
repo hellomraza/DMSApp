@@ -43,7 +43,7 @@ const DashboardScreen = ({ navigation }: any) => {
   };
 
   const navigateToSearch = () => {
-    navigation.navigate('DocumentSearch');
+    navigation.navigate('FileSearch');
   };
 
   const navigateToDocuments = () => {
