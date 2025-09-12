@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 
 import { fontSize, scale, spacing } from '../../utils/scale';
+import PDFViewer from './PDFViewer';
 
 interface Tag {
   tag_name: string;
@@ -37,6 +38,7 @@ interface DocumentPreviewModalProps {
   document: SearchResult | null;
   onClose: () => void;
   onDownload: (document: SearchResult) => void;
+  onOpenPDFFullscreen?: (source: any, title: string) => void;
 }
 
 const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
@@ -44,6 +46,7 @@ const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
   document,
   onClose,
   onDownload,
+  onOpenPDFFullscreen,
 }) => {
   if (!document) return null;
 
@@ -113,12 +116,73 @@ const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
                   </View>
                 ) : document.file.type === 'application/pdf' ? (
                   <View style={styles.pdfPreviewContainer}>
-                    <Text style={styles.previewPlaceholderText}>
-                      📄 PDF Document
-                    </Text>
-                    <Text style={styles.previewPlaceholderSubtext}>
-                      {document.file.name}
-                    </Text>
+                    {document.file.localPath ? (
+                      <>
+                        <PDFViewer
+                          source={{ uri: `file://${document.file.localPath}` }}
+                          style={styles.pdfViewer}
+                        />
+                        {onOpenPDFFullscreen && (
+                          <TouchableOpacity
+                            style={styles.fullscreenButton}
+                            onPress={() =>
+                              onOpenPDFFullscreen(
+                                { uri: `file://${document.file?.localPath}` },
+                                document.file?.name || 'PDF Document',
+                              )
+                            }
+                          >
+                            <Text style={styles.fullscreenButtonText}>
+                              📱 View Fullscreen
+                            </Text>
+                          </TouchableOpacity>
+                        )}
+                      </>
+                    ) : document.file.name &&
+                      (document.file.name.startsWith('http') ||
+                        document.file.name.includes('.pdf')) ? (
+                      <>
+                        <PDFViewer
+                          source={{
+                            uri: document.file.name.startsWith('http')
+                              ? document.file.name
+                              : `https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf`, // Fallback test PDF
+                          }}
+                          style={styles.pdfViewer}
+                        />
+                        {onOpenPDFFullscreen && (
+                          <TouchableOpacity
+                            style={styles.fullscreenButton}
+                            onPress={() =>
+                              onOpenPDFFullscreen(
+                                {
+                                  uri: document.file?.name?.startsWith('http')
+                                    ? document.file.name
+                                    : `https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf`,
+                                },
+                                document.file?.name || 'PDF Document',
+                              )
+                            }
+                          >
+                            <Text style={styles.fullscreenButtonText}>
+                              📱 View Fullscreen
+                            </Text>
+                          </TouchableOpacity>
+                        )}
+                      </>
+                    ) : (
+                      <View style={styles.previewPlaceholder}>
+                        <Text style={styles.previewPlaceholderText}>
+                          📄 PDF Document
+                        </Text>
+                        <Text style={styles.previewPlaceholderSubtext}>
+                          {document.file.name}
+                        </Text>
+                        <Text style={styles.previewPlaceholderSubtext}>
+                          Download the file to view the PDF
+                        </Text>
+                      </View>
+                    )}
                   </View>
                 ) : document.file.type.startsWith('text/') ? (
                   <View style={styles.textPreviewContainer}>
@@ -311,12 +375,14 @@ const styles = StyleSheet.create({
   },
   pdfPreviewContainer: {
     width: '100%',
-    height: scale(150),
-    justifyContent: 'center',
-    alignItems: 'center',
+    height: scale(300),
     backgroundColor: '#f8f9fa',
     borderRadius: scale(8),
-    padding: spacing.lg,
+    overflow: 'hidden',
+  },
+  pdfViewer: {
+    width: '100%',
+    height: '100%',
   },
   textPreviewContainer: {
     width: '100%',
@@ -415,6 +481,20 @@ const styles = StyleSheet.create({
     fontSize: fontSize.md,
     fontWeight: 'bold',
     color: '#fff',
+  },
+  fullscreenButton: {
+    position: 'absolute',
+    top: spacing.sm,
+    right: spacing.sm,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.sm,
+    borderRadius: scale(6),
+  },
+  fullscreenButtonText: {
+    color: '#fff',
+    fontSize: fontSize.sm,
+    fontWeight: '600',
   },
 });
 
