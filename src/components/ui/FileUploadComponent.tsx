@@ -19,7 +19,8 @@ import {
   launchImageLibrary,
   MediaType,
 } from 'react-native-image-picker';
-import { apiService } from '../../services/api';
+import { apiSwitcher } from '../../services/apiSwitcher';
+import { fileManager } from '../../services/fileManager';
 import { fontSize, scale, spacing } from '../../utils/scale';
 
 interface Tag {
@@ -76,7 +77,7 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({ onFileUpload }) => {
   // Fetch available tags
   const fetchTags = useCallback(async () => {
     try {
-      const response = await apiService.getDocumentTags({ term: '' });
+      const response = await apiSwitcher.getDocumentTags({ term: '' });
       if (response && response.data) {
         setAvailableTags(response.data);
       }
@@ -141,44 +142,93 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({ onFileUpload }) => {
   };
 
   // Open camera
-  const openCamera = () => {
+  const openCamera = async () => {
     const options = {
       mediaType: 'mixed' as MediaType,
       quality: 0.8 as any,
     };
     console.log('Camera options:', options);
 
-    launchCamera(options, response => {
+    launchCamera(options, async response => {
       console.log('Camera response:', response);
       if (response.assets && response.assets[0]) {
         const asset = response.assets[0];
-        const file: UploadedFile = {
-          uri: asset.uri!,
-          type: asset.type!,
-          name: asset.fileName || `image_${Date.now()}.jpg`,
-          size: asset.fileSize,
-        };
-        setUploadedFiles([...uploadedFiles, file]);
+
+        try {
+          // Create temporary file using file manager for better handling
+          const tempFile = await fileManager.saveTemporaryFile({
+            uri: asset.uri!,
+            type: asset.type!,
+            name: asset.fileName || `camera_${Date.now()}.jpg`,
+            size: asset.fileSize,
+          });
+
+          const file: UploadedFile = {
+            uri: tempFile.localPath, // Use managed file path
+            type: tempFile.type,
+            name: tempFile.name,
+            size: tempFile.size,
+          };
+
+          setUploadedFiles([...uploadedFiles, file]);
+          console.log('Camera file saved temporarily:', tempFile.localPath);
+        } catch (error) {
+          console.error('Failed to save camera file:', error);
+          // Fall back to original file handling
+          const file: UploadedFile = {
+            uri: asset.uri!,
+            type: asset.type!,
+            name: asset.fileName || `image_${Date.now()}.jpg`,
+            size: asset.fileSize,
+          };
+          setUploadedFiles([...uploadedFiles, file]);
+        }
       }
     });
   };
 
   // Open image library
-  const openImageLibrary = () => {
+  const openImageLibrary = async () => {
     const options = {
       mediaType: 'mixed' as MediaType,
       quality: 0.8 as any,
       selectionLimit: 5,
     };
 
-    launchImageLibrary(options, response => {
+    launchImageLibrary(options, async response => {
       if (response.assets) {
-        const newFiles: UploadedFile[] = response.assets.map(asset => ({
-          uri: asset.uri!,
-          type: asset.type!,
-          name: asset.fileName || `image_${Date.now()}.jpg`,
-          size: asset.fileSize,
-        }));
+        const newFiles: UploadedFile[] = [];
+
+        for (const asset of response.assets) {
+          try {
+            // Save each file temporarily using file manager
+            const tempFile = await fileManager.saveTemporaryFile({
+              uri: asset.uri!,
+              type: asset.type!,
+              name: asset.fileName || `gallery_${Date.now()}.jpg`,
+              size: asset.fileSize,
+            });
+
+            newFiles.push({
+              uri: tempFile.localPath,
+              type: tempFile.type,
+              name: tempFile.name,
+              size: tempFile.size,
+            });
+
+            console.log('Gallery file saved temporarily:', tempFile.localPath);
+          } catch (error) {
+            console.error('Failed to save gallery file:', error);
+            // Fall back to original file handling
+            newFiles.push({
+              uri: asset.uri!,
+              type: asset.type!,
+              name: asset.fileName || `image_${Date.now()}.jpg`,
+              size: asset.fileSize,
+            });
+          }
+        }
+
         setUploadedFiles([...uploadedFiles, ...newFiles]);
       }
     });
@@ -192,12 +242,37 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({ onFileUpload }) => {
         allowMultiSelection: true,
       });
 
-      const newFiles: UploadedFile[] = results.map(result => ({
-        uri: result.uri,
-        type: result.type || 'application/pdf',
-        name: result.name || `document_${Date.now()}.pdf`,
-        size: result.size || undefined,
-      }));
+      const newFiles: UploadedFile[] = [];
+
+      for (const result of results) {
+        try {
+          // Save document temporarily using file manager
+          const tempFile = await fileManager.saveTemporaryFile({
+            uri: result.uri,
+            type: result.type || 'application/pdf',
+            name: result.name || `document_${Date.now()}.pdf`,
+            size: result.size || undefined,
+          });
+
+          newFiles.push({
+            uri: tempFile.localPath,
+            type: tempFile.type,
+            name: tempFile.name,
+            size: tempFile.size,
+          });
+
+          console.log('Document saved temporarily:', tempFile.localPath);
+        } catch (error) {
+          console.error('Failed to save document file:', error);
+          // Fall back to original file handling
+          newFiles.push({
+            uri: result.uri,
+            type: result.type || 'application/pdf',
+            name: result.name || `document_${Date.now()}.pdf`,
+            size: result.size || undefined,
+          });
+        }
+      }
 
       setUploadedFiles([...uploadedFiles, ...newFiles]);
     } catch (error: any) {
@@ -214,7 +289,7 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({ onFileUpload }) => {
   };
 
   // Handle form submission
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!majorHead || !minorHead || uploadedFiles.length === 0) {
       Alert.alert(
         'Error',
@@ -223,25 +298,82 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({ onFileUpload }) => {
       return;
     }
 
-    const formData = new FormData();
+    // Validate all files before submission
+    for (const file of uploadedFiles) {
+      const validation = apiSwitcher.validateFile(file);
+      if (!validation.isValid) {
+        Alert.alert(
+          'File Validation Error',
+          validation.error || 'Invalid file',
+        );
+        return;
+      }
+    }
 
-    // Add form fields
-    formData.append('major_head', majorHead);
-    formData.append('minor_head', minorHead);
-    formData.append('document_date', selectedDate.toISOString().split('T')[0]);
-    formData.append('document_remarks', remarks);
-    formData.append('tags', JSON.stringify(selectedTags));
+    try {
+      // For multiple files, upload them one by one
+      for (const file of uploadedFiles) {
+        console.log('Uploading file:', file.name);
 
-    // Add files
-    uploadedFiles.forEach(file => {
-      formData.append('files', {
-        uri: file.uri,
-        type: file.type,
-        name: file.name,
-      } as any);
-    });
+        const documentData: DocumentUploadData = {
+          major_head: majorHead,
+          minor_head: minorHead,
+          document_date: selectedDate.toISOString().split('T')[0],
+          document_remarks: remarks,
+          tags: selectedTags,
+          user_id: 'current_user', // TODO: Get from auth context
+        };
 
+        const response = await apiSwitcher.uploadDocument(file, documentData);
+        console.log('Upload response:', response.data);
+      }
+
+      Alert.alert(
+        'Success',
+        `${uploadedFiles.length} file(s) uploaded successfully!`,
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              // Reset form
+              setUploadedFiles([]);
+              setRemarks('');
+              setSelectedTags([]);
+              setMajorHead('');
+              setMinorHead('');
+              setSelectedDate(new Date());
+            },
+          },
+        ],
+      );
+    } catch (error: any) {
+      console.error('Upload error:', error);
+      Alert.alert(
+        'Upload Failed',
+        error.message || 'Failed to upload files. Please try again.',
+      );
+    }
+
+    // Legacy callback for compatibility
     if (onFileUpload) {
+      const formData = new FormData();
+      formData.append('major_head', majorHead);
+      formData.append('minor_head', minorHead);
+      formData.append(
+        'document_date',
+        selectedDate.toISOString().split('T')[0],
+      );
+      formData.append('document_remarks', remarks);
+      formData.append('tags', JSON.stringify(selectedTags));
+
+      uploadedFiles.forEach(file => {
+        formData.append('files', {
+          uri: file.uri,
+          type: file.type,
+          name: file.name,
+        } as any);
+      });
+
       onFileUpload(formData);
     }
   };
@@ -281,7 +413,6 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({ onFileUpload }) => {
             selectedValue={majorHead}
             onValueChange={handleMajorHeadChange}
             style={styles.picker}
-            itemStyle={{ color: '#333' }}
           >
             <Picker.Item label="Select Category" value="" />
             <Picker.Item label="Personal" value="Personal" />
