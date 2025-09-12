@@ -95,6 +95,7 @@ const DashboardScreen = ({ navigation }: any) => {
         <FileSearchComponent
           onSearchResults={handleSearchResults}
           refreshTrigger={refreshTrigger}
+          navigation={navigation}
         />
       </ScrollView>
 
