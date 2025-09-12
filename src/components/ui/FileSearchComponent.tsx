@@ -32,10 +32,12 @@ interface SearchResult {
 
 interface FileSearchComponentProps {
   onSearchResults?: (results: SearchResult[]) => void;
+  refreshTrigger?: number;
 }
 
 const FileSearchComponent: React.FC<FileSearchComponentProps> = ({
   onSearchResults,
+  refreshTrigger,
 }) => {
   // Search filters state
   const [majorHead, setMajorHead] = useState<'Personal' | 'Professional' | ''>(
@@ -81,6 +83,18 @@ const FileSearchComponent: React.FC<FileSearchComponentProps> = ({
     };
     loadInitialData();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Handle refresh trigger from parent component
+  useEffect(() => {
+    if (refreshTrigger && refreshTrigger > 0) {
+      const refreshData = async () => {
+        console.log('Refreshing data triggered by pull-to-refresh...');
+        await loadAvailableTags();
+        await loadAllDocuments();
+      };
+      refreshData();
+    }
+  }, [refreshTrigger]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Filter documents when search text changes
   useEffect(() => {
