@@ -189,3 +189,40 @@ type ErrorState = {
   message?: string;
   code?: string;
 };
+
+// ============================================================================
+// File Management Types
+// ============================================================================
+
+type FileInfo = {
+  uri: string;
+  name: string;
+  type: string;
+  size?: number;
+};
+
+type ManagedFile = {
+  id: string;
+  originalUri: string;
+  localPath: string;
+  name: string;
+  type: string;
+  size: number;
+  createdAt: string;
+  isTemporary: boolean;
+};
+
+type FileCategory = 'documents' | 'images' | 'temp' | 'cache';
+
+type StorageInfo = {
+  documentsSize: number;
+  tempSize: number;
+  cacheSize: number;
+  totalSize: number;
+};
+
+type FileOperationResult = {
+  success: boolean;
+  managedFile?: ManagedFile;
+  error?: string;
+};
