@@ -2,6 +2,7 @@ import { pick, types } from '@react-native-documents/picker';
 import { Picker } from '@react-native-picker/picker';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
   Alert,
   FlatList,
   Image,
@@ -52,6 +53,18 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({ onFileUpload }) => {
   const [newTagText, setNewTagText] = useState('');
   const [showTagModal, setShowTagModal] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<string>('');
+
+  console.log('uploadedFiles count:', uploadedFiles.length);
+  uploadedFiles.forEach((file, index) => {
+    console.log(`File ${index}:`, {
+      name: file.name,
+      type: file.type,
+      uri: file.uri,
+      size: file.size,
+    });
+  });
 
   // Options for dropdown menus
   const personalOptions = [
@@ -310,9 +323,13 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({ onFileUpload }) => {
       }
     }
 
+    setIsUploading(true);
+
     try {
       // For multiple files, upload them one by one
-      for (const file of uploadedFiles) {
+      for (let i = 0; i < uploadedFiles.length; i++) {
+        const file = uploadedFiles[i];
+        setUploadProgress(`Uploading... (${i + 1}/${uploadedFiles.length})`);
         console.log('Uploading file:', file.name);
 
         const documentData: DocumentUploadData = {
@@ -342,6 +359,8 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({ onFileUpload }) => {
               setMajorHead('');
               setMinorHead('');
               setSelectedDate(new Date());
+              setIsUploading(false);
+              setUploadProgress('');
             },
           },
         ],
@@ -352,6 +371,8 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({ onFileUpload }) => {
         'Upload Failed',
         error.message || 'Failed to upload files. Please try again.',
       );
+      setIsUploading(false);
+      setUploadProgress('');
     }
 
     // Legacy callback for compatibility
@@ -447,60 +468,54 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({ onFileUpload }) => {
         </View>
       )}
 
-      {/* Tags Input */}
+      {/* Tags Selection */}
       <View style={styles.inputGroup}>
-        <Text style={styles.label}>Tags</Text>
-        <View style={styles.tagsContainer}>
-          {selectedTags.map((tag, index) => (
-            <View key={index} style={styles.tagChip}>
-              <Text style={styles.tagText}>{tag.tag_name}</Text>
-              <TouchableOpacity onPress={() => removeTag(tag)}>
-                <Text style={styles.tagRemove}>×</Text>
-              </TouchableOpacity>
-            </View>
-          ))}
+        <View style={styles.tagsHeaderContainer}>
+          <Text style={styles.label}>Tags</Text>
           <TouchableOpacity
             style={styles.addTagButton}
             onPress={() => setShowTagModal(true)}
           >
-            <Text style={styles.addTagText}>+ Add Tag</Text>
+            <Text style={styles.addTagText}>+ Create New</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Available Tags Section */}
-        {availableTags.length > 0 && (
-          <View style={styles.availableTagsSection}>
-            <Text style={styles.availableTagsLabel}>
-              Available Tags (tap to add):
-            </Text>
-            <View style={styles.availableTagsContainer}>
-              {availableTags
-                .filter(
-                  tag =>
-                    !selectedTags.find(
-                      selected => selected.tag_name === tag.tag_name,
-                    ),
-                )
-                .map((tag, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    style={styles.availableTagChip}
-                    onPress={() => addTag(tag)}
+        {availableTags.length > 0 ? (
+          <View style={styles.unifiedTagsContainer}>
+            {availableTags.map((tag, index) => {
+              const isSelected = selectedTags.find(
+                selected => selected.tag_name === tag.tag_name,
+              );
+
+              return (
+                <TouchableOpacity
+                  key={index}
+                  style={[
+                    styles.unifiedTagChip,
+                    isSelected ? styles.selectedTag : styles.unselectedTag,
+                  ]}
+                  onPress={() => (isSelected ? removeTag(tag) : addTag(tag))}
+                >
+                  <Text
+                    style={[
+                      styles.unifiedTagText,
+                      isSelected
+                        ? styles.selectedTagText
+                        : styles.unselectedTagText,
+                    ]}
                   >
-                    <Text style={styles.availableTagText}>{tag.tag_name}</Text>
-                  </TouchableOpacity>
-                ))}
-              {availableTags.filter(
-                tag =>
-                  !selectedTags.find(
-                    selected => selected.tag_name === tag.tag_name,
-                  ),
-              ).length === 0 && (
-                <Text style={styles.noAvailableTagsText}>
-                  All tags have been selected
-                </Text>
-              )}
-            </View>
+                    {tag.tag_name}
+                  </Text>
+                  {isSelected && <Text style={styles.tagCheckmark}>✓</Text>}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        ) : (
+          <View style={styles.noTagsContainer}>
+            <Text style={styles.noTagsText}>
+              No tags available. Create your first tag!
+            </Text>
           </View>
         )}
       </View>
@@ -531,18 +546,33 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({ onFileUpload }) => {
         {/* Display uploaded files */}
         {uploadedFiles.map((file, index) => (
           <View key={index} style={styles.fileItem}>
-            {file.type.startsWith('image/') && (
-              <Image source={{ uri: file.uri }} style={styles.filePreview} />
+            {file.type.startsWith('image/') ? (
+              <Image
+                source={{
+                  uri: file.uri.startsWith('file://')
+                    ? file.uri
+                    : `file://${file.uri}`,
+                }}
+                style={styles.filePreview}
+                resizeMode="cover"
+              />
+            ) : (
+              <View style={[styles.filePreview, styles.documentIcon]}>
+                <Text style={styles.documentIconText}>📄</Text>
+              </View>
             )}
             <View style={styles.fileInfo}>
-              <Text style={styles.fileName}>{file.name}</Text>
+              <Text style={styles.fileName} numberOfLines={2}>
+                {file.name}
+              </Text>
               <Text style={styles.fileSize}>
                 {file.size
-                  ? `${(file.size / 1024).toFixed(1)} KB`
+                  ? `${(file.size / (1024 * 1024)).toFixed(2)} MB`
                   : 'Unknown size'}
               </Text>
+              <Text style={styles.fileType}>{file.type}</Text>
             </View>
-            <TouchableOpacity onPress={() => removeFile(index)}>
+            <TouchableOpacity hitSlop={20} onPress={() => removeFile(index)}>
               <Text style={styles.fileRemove}>×</Text>
             </TouchableOpacity>
           </View>
@@ -550,8 +580,24 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({ onFileUpload }) => {
       </View>
 
       {/* Submit Button */}
-      <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-        <Text style={styles.submitButtonText}>Upload Document</Text>
+      <TouchableOpacity
+        style={[
+          styles.submitButton,
+          isUploading && styles.submitButtonDisabled,
+        ]}
+        onPress={handleSubmit}
+        disabled={isUploading}
+      >
+        {isUploading ? (
+          <View style={styles.uploadingContainer}>
+            <ActivityIndicator size="small" color="#fff" />
+            <Text style={styles.submitButtonText}>
+              {uploadProgress || 'Uploading...'}
+            </Text>
+          </View>
+        ) : (
+          <Text style={styles.submitButtonText}>Upload Document</Text>
+        )}
       </TouchableOpacity>
 
       {/* Tag Modal */}
@@ -664,7 +710,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: scale(12),
-    paddingVertical: scale(6),
+    paddingVertical: scale(4),
     borderRadius: scale(16),
   },
   tagText: {
@@ -687,6 +733,7 @@ const styles = StyleSheet.create({
   },
   addTagText: {
     color: '#666',
+    textAlign: 'center',
   },
   remarksInput: {
     backgroundColor: '#fff',
@@ -719,10 +766,11 @@ const styles = StyleSheet.create({
     borderColor: '#ddd',
   },
   filePreview: {
-    width: scale(40),
-    height: scale(40),
-    borderRadius: scale(4),
+    width: scale(60),
+    height: scale(60),
+    borderRadius: scale(8),
     marginRight: spacing.sm,
+    backgroundColor: '#f8f8f8',
   },
   fileInfo: {
     flex: 1,
@@ -735,6 +783,21 @@ const styles = StyleSheet.create({
   fileSize: {
     fontSize: fontSize.sm,
     color: '#666',
+  },
+  fileType: {
+    fontSize: fontSize.xs,
+    color: '#999',
+    marginTop: scale(2),
+  },
+  documentIcon: {
+    backgroundColor: '#f0f0f0',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: scale(1),
+    borderColor: '#ddd',
+  },
+  documentIconText: {
+    fontSize: fontSize.lg,
   },
   fileRemove: {
     fontSize: fontSize.xl,
@@ -750,10 +813,20 @@ const styles = StyleSheet.create({
     marginTop: spacing.lg,
     marginBottom: scale(40),
   },
+  submitButtonDisabled: {
+    backgroundColor: '#6c757d',
+    opacity: 0.7,
+  },
   submitButtonText: {
     color: '#fff',
     fontSize: fontSize.lg,
     fontWeight: 'bold',
+  },
+  uploadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
   },
   modalOverlay: {
     flex: 1,
@@ -814,39 +887,60 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '600',
   },
-  availableTagsSection: {
-    marginTop: spacing.md,
-    paddingTop: spacing.sm,
-    borderTopWidth: scale(1),
-    borderTopColor: '#eee',
-  },
-  availableTagsLabel: {
-    fontSize: fontSize.sm,
-    fontWeight: '600',
+  tagsHeaderContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: spacing.sm,
-    color: '#666',
   },
-  availableTagsContainer: {
+  unifiedTagsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: spacing.xs,
+    gap: spacing.sm,
   },
-  availableTagChip: {
-    backgroundColor: '#f8f9fa',
-    paddingHorizontal: scale(10),
-    paddingVertical: scale(5),
-    borderRadius: scale(14),
-    borderWidth: scale(1),
+  unifiedTagChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: scale(12),
+    paddingVertical: scale(4),
+    borderRadius: scale(20),
+    borderWidth: scale(2),
+    marginBottom: spacing.xs,
+  },
+  selectedTag: {
+    backgroundColor: '#007AFF',
     borderColor: '#007AFF',
   },
-  availableTagText: {
-    color: '#007AFF',
-    fontSize: fontSize.sm,
+  unselectedTag: {
+    backgroundColor: 'transparent',
+    borderColor: '#007AFF',
   },
-  noAvailableTagsText: {
+  unifiedTagText: {
     fontSize: fontSize.sm,
-    color: '#999',
-    fontStyle: 'italic',
+    fontWeight: '500',
+  },
+  selectedTagText: {
+    color: '#fff',
+  },
+  unselectedTagText: {
+    color: '#007AFF',
+  },
+  tagCheckmark: {
+    color: '#fff',
+    fontSize: fontSize.sm,
+    fontWeight: 'bold',
+    marginLeft: scale(6),
+  },
+  noTagsContainer: {
+    padding: spacing.md,
+    backgroundColor: '#f8f9fa',
+    borderRadius: scale(8),
+    alignItems: 'center',
+  },
+  noTagsText: {
+    fontSize: fontSize.md,
+    color: '#666',
+    textAlign: 'center',
   },
 });
 
