@@ -20,6 +20,7 @@ import {
   MediaType,
 } from 'react-native-image-picker';
 import { apiService } from '../../services/api';
+import { fontSize, scale, spacing } from '../../utils/scale';
 
 interface Tag {
   tag_name: string;
@@ -145,8 +146,10 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({ onFileUpload }) => {
       mediaType: 'mixed' as MediaType,
       quality: 0.8 as any,
     };
+    console.log('Camera options:', options);
 
     launchCamera(options, response => {
+      console.log('Camera response:', response);
       if (response.assets && response.assets[0]) {
         const asset = response.assets[0];
         const file: UploadedFile = {
@@ -278,6 +281,7 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({ onFileUpload }) => {
             selectedValue={majorHead}
             onValueChange={handleMajorHeadChange}
             style={styles.picker}
+            itemStyle={{ color: '#333' }}
           >
             <Picker.Item label="Select Category" value="" />
             <Picker.Item label="Personal" value="Personal" />
@@ -439,73 +443,77 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({ onFileUpload }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
+    padding: spacing.md,
     backgroundColor: '#f5f5f5',
   },
   title: {
-    fontSize: 24,
+    fontSize: fontSize.xxl,
     fontWeight: 'bold',
-    marginBottom: 20,
+    marginBottom: spacing.lg,
     textAlign: 'center',
     color: '#333',
   },
   inputGroup: {
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   label: {
-    fontSize: 16,
+    fontSize: fontSize.md,
     fontWeight: '600',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
     color: '#333',
   },
   dateButton: {
     backgroundColor: '#fff',
-    padding: 12,
-    borderRadius: 8,
-    borderWidth: 1,
+    padding: scale(12),
+    borderRadius: scale(8),
+    borderWidth: scale(1),
     borderColor: '#ddd',
   },
   dateText: {
-    fontSize: 16,
+    fontSize: fontSize.md,
     color: '#333',
   },
   pickerContainer: {
     backgroundColor: '#fff',
-    borderRadius: 8,
-    borderWidth: 1,
+    borderRadius: scale(8),
+    borderWidth: scale(1),
     borderColor: '#ddd',
+    alignItems: 'center',
+    height: scale(50),
   },
   picker: {
-    height: 50,
+    height: '100%',
+    width: '100%',
+    color: '#333',
   },
   tagsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: spacing.sm,
   },
   tagChip: {
     backgroundColor: '#007AFF',
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
+    paddingHorizontal: scale(12),
+    paddingVertical: scale(6),
+    borderRadius: scale(16),
   },
   tagText: {
     color: '#fff',
-    marginRight: 4,
+    marginRight: scale(4),
   },
   tagRemove: {
     color: '#fff',
-    fontSize: 18,
+    fontSize: fontSize.lg,
     fontWeight: 'bold',
   },
   addTagButton: {
     backgroundColor: '#f0f0f0',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    borderWidth: 1,
+    paddingHorizontal: scale(12),
+    paddingVertical: scale(6),
+    borderRadius: scale(16),
+    borderWidth: scale(1),
     borderColor: '#ddd',
     borderStyle: 'dashed',
   },
@@ -514,69 +522,69 @@ const styles = StyleSheet.create({
   },
   remarksInput: {
     backgroundColor: '#fff',
-    padding: 12,
-    borderRadius: 8,
-    borderWidth: 1,
+    padding: scale(12),
+    borderRadius: scale(8),
+    borderWidth: scale(1),
     borderColor: '#ddd',
     textAlignVertical: 'top',
   },
   uploadButton: {
     backgroundColor: '#007AFF',
-    padding: 12,
-    borderRadius: 8,
+    padding: scale(12),
+    borderRadius: scale(8),
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   uploadButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: fontSize.md,
     fontWeight: '600',
   },
   fileItem: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#fff',
-    padding: 8,
-    borderRadius: 8,
-    marginBottom: 8,
-    borderWidth: 1,
+    padding: spacing.sm,
+    borderRadius: scale(8),
+    marginBottom: spacing.sm,
+    borderWidth: scale(1),
     borderColor: '#ddd',
   },
   filePreview: {
-    width: 40,
-    height: 40,
-    borderRadius: 4,
-    marginRight: 8,
+    width: scale(40),
+    height: scale(40),
+    borderRadius: scale(4),
+    marginRight: spacing.sm,
   },
   fileInfo: {
     flex: 1,
   },
   fileName: {
-    fontSize: 14,
+    fontSize: fontSize.base,
     fontWeight: '600',
     color: '#333',
   },
   fileSize: {
-    fontSize: 12,
+    fontSize: fontSize.sm,
     color: '#666',
   },
   fileRemove: {
-    fontSize: 20,
+    fontSize: fontSize.xl,
     color: '#ff3333',
     fontWeight: 'bold',
-    padding: 4,
+    padding: scale(4),
   },
   submitButton: {
     backgroundColor: '#28a745',
-    padding: 16,
-    borderRadius: 8,
+    padding: spacing.md,
+    borderRadius: scale(8),
     alignItems: 'center',
-    marginTop: 20,
-    marginBottom: 40,
+    marginTop: spacing.lg,
+    marginBottom: scale(40),
   },
   submitButtonText: {
     color: '#fff',
-    fontSize: 18,
+    fontSize: fontSize.lg,
     fontWeight: 'bold',
   },
   modalOverlay: {
@@ -589,50 +597,50 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     width: '90%',
     maxHeight: '80%',
-    borderRadius: 8,
-    padding: 16,
+    borderRadius: scale(8),
+    padding: spacing.md,
   },
   modalTitle: {
-    fontSize: 18,
+    fontSize: fontSize.lg,
     fontWeight: 'bold',
-    marginBottom: 16,
+    marginBottom: spacing.md,
     textAlign: 'center',
   },
   newTagInput: {
-    borderWidth: 1,
+    borderWidth: scale(1),
     borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 8,
+    borderRadius: scale(8),
+    padding: scale(12),
+    marginBottom: spacing.sm,
   },
   createTagButton: {
     backgroundColor: '#007AFF',
-    padding: 8,
-    borderRadius: 8,
+    padding: spacing.sm,
+    borderRadius: scale(8),
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   createTagText: {
     color: '#fff',
     fontWeight: '600',
   },
   tagsList: {
-    maxHeight: 200,
+    maxHeight: scale(200),
   },
   tagOption: {
-    padding: 12,
-    borderBottomWidth: 1,
+    padding: scale(12),
+    borderBottomWidth: scale(1),
     borderBottomColor: '#eee',
   },
   tagOptionText: {
-    fontSize: 16,
+    fontSize: fontSize.md,
   },
   modalCloseButton: {
     backgroundColor: '#6c757d',
-    padding: 12,
-    borderRadius: 8,
+    padding: scale(12),
+    borderRadius: scale(8),
     alignItems: 'center',
-    marginTop: 16,
+    marginTop: spacing.md,
   },
   modalCloseText: {
     color: '#fff',
