@@ -8,6 +8,7 @@ import DashboardScreen from '../screens/DashboardScreen';
 import FileUploadScreen from '../screens/FileUploadScreen';
 import LoginScreen from '../screens/LoginScreen';
 import OTPVerificationScreen from '../screens/OTPVerificationScreen';
+import PDFPreviewScreen from '../screens/PDFPreviewScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -73,6 +74,14 @@ const Navigation = () => {
               options={{
                 title: 'File Upload',
                 headerShown: true,
+              }}
+            />
+            <Stack.Screen
+              name="PDFPreview"
+              component={PDFPreviewScreen}
+              options={{
+                title: 'PDF Preview',
+                headerShown: false,
               }}
             />
           </>
