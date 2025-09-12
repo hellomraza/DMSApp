@@ -1,5 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AxiosResponse } from 'axios';
+import { Platform } from 'react-native';
+import RNFS from 'react-native-fs';
 import { fileManager, ManagedFile } from './fileManager';
 import {
   createMockError,
@@ -385,6 +387,70 @@ class MockApiService {
       });
     } catch (error) {
       throw createMockError('Failed to cleanup files');
+    }
+  }
+
+  // Download Document
+  async downloadDocument(
+    documentId: string,
+    fileName: string,
+  ): Promise<string> {
+    await mockDelay();
+
+    console.log('Mock API: Download Document', documentId, fileName);
+
+    try {
+      // Load documents from AsyncStorage
+      const storedDocs = await AsyncStorage.getItem('uploadedDocuments');
+      const allDocs = storedDocs
+        ? JSON.parse(storedDocs)
+        : mockStorage.uploadedDocuments;
+
+      const document = allDocs.find((doc: any) => doc.id === documentId);
+
+      if (!document) {
+        throw createMockError('Document not found');
+      }
+
+      if (!document.file || !document.file.localPath) {
+        throw createMockError('File not available for download');
+      }
+
+      // Check if the file still exists on the device
+      const fileExists = await RNFS.exists(document.file.localPath);
+      if (!fileExists) {
+        throw createMockError('File not found on device');
+      }
+
+      // Create downloads directory
+      const downloadDir =
+        Platform.OS === 'ios'
+          ? RNFS.MainBundlePath + '/Downloads'
+          : RNFS.DownloadDirectoryPath;
+
+      const dirExists = await RNFS.exists(downloadDir);
+      if (!dirExists) {
+        await RNFS.mkdir(downloadDir);
+      }
+
+      // Generate unique filename to avoid conflicts
+      const timestamp = new Date().getTime();
+      const fileExtension = fileName.split('.').pop() || '';
+      const baseName = fileName.replace(`.${fileExtension}`, '');
+      const downloadFileName = `${baseName}_${timestamp}.${fileExtension}`;
+      const downloadPath = `${downloadDir}/${downloadFileName}`;
+
+      // Copy file to downloads directory with progress simulation
+      await RNFS.copyFile(document.file.localPath, downloadPath);
+
+      // Simulate download progress for user feedback
+      console.log('Mock API: Download progress: 100%');
+
+      console.log('Mock API: File downloaded to:', downloadPath);
+      return downloadPath;
+    } catch (error: any) {
+      console.error('Mock download error:', error);
+      throw createMockError(error.message || 'Failed to download document');
     }
   }
 
