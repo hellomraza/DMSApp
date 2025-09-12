@@ -8,6 +8,7 @@ import {
   TouchableOpacityProps,
   ViewStyle,
 } from 'react-native';
+import { fontSize, scale, spacing } from '../../utils/scale';
 
 interface CustomButtonProps extends TouchableOpacityProps {
   title: string;
@@ -91,22 +92,22 @@ const CustomButton: React.FC<CustomButtonProps> = ({
 
 const styles = StyleSheet.create({
   button: {
-    borderRadius: 8,
+    borderRadius: scale(8),
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'row',
   },
   button_small: {
-    height: 36,
-    paddingHorizontal: 16,
+    height: scale(36),
+    paddingHorizontal: spacing.md,
   },
   button_medium: {
-    height: 50,
-    paddingHorizontal: 20,
+    height: scale(50),
+    paddingHorizontal: spacing.lg,
   },
   button_large: {
-    height: 56,
-    paddingHorizontal: 24,
+    height: scale(56),
+    paddingHorizontal: spacing.xl,
   },
   buttonPrimary: {
     backgroundColor: '#3498db',
@@ -131,13 +132,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   buttonText_small: {
-    fontSize: 14,
+    fontSize: fontSize.base,
   },
   buttonText_medium: {
-    fontSize: 16,
+    fontSize: fontSize.md,
   },
   buttonText_large: {
-    fontSize: 18,
+    fontSize: fontSize.lg,
   },
   buttonTextDefault: {
     color: '#ffffff',

@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { CustomButton, CustomTextInput } from '../components/ui';
 import { useGenerateOTP } from '../hooks/useApi';
+import { fontSize, scale, spacing } from '../utils/scale';
 
 const LoginScreen = ({ navigation }: any) => {
   const [formData, setFormData] = useState<LoginFormData>({
@@ -111,21 +112,21 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     justifyContent: 'center',
-    paddingHorizontal: 24,
+    paddingHorizontal: spacing.lg,
   },
   header: {
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: spacing.xxl,
   },
   title: {
-    fontSize: 28,
+    fontSize: fontSize.xxxl,
     fontWeight: 'bold',
     color: '#2c3e50',
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: fontSize.md,
     color: '#7f8c8d',
     textAlign: 'center',
   },
@@ -133,13 +134,13 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   label: {
-    fontSize: 16,
+    fontSize: fontSize.md,
     fontWeight: '600',
     color: '#2c3e50',
   },
   input: {
-    height: 50,
-    fontSize: 16,
+    height: scale(50),
+    fontSize: fontSize.md,
   },
 });
 

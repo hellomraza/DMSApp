@@ -8,6 +8,7 @@ import {
   View,
   ViewStyle,
 } from 'react-native';
+import { fontSize, scale, spacing } from '../../utils/scale';
 
 interface CustomTextInputProps extends TextInputProps {
   label?: string;
@@ -49,31 +50,31 @@ const CustomTextInput = forwardRef<TextInput, CustomTextInputProps>(
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   label: {
-    fontSize: 16,
+    fontSize: fontSize.md,
     fontWeight: '600',
     color: '#2c3e50',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   input: {
-    height: 50,
+    height: scale(50),
     borderWidth: 1,
     borderColor: '#ddd',
-    borderRadius: 8,
-    paddingHorizontal: 16,
+    borderRadius: scale(8),
+    paddingHorizontal: spacing.md,
     backgroundColor: '#ffffff',
-    fontSize: 16,
+    fontSize: fontSize.md,
     color: '#2c3e50',
   },
   inputError: {
     borderColor: '#e74c3c',
   },
   error: {
-    fontSize: 12,
+    fontSize: fontSize.sm,
     color: '#e74c3c',
-    marginTop: 4,
+    marginTop: spacing.xs,
   },
 });
 
