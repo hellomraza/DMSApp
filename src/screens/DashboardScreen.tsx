@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Alert,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -15,6 +16,8 @@ import { fontSize, scale, spacing } from '../utils/scale';
 
 const DashboardScreen = ({ navigation }: any) => {
   const { dispatch } = useAuth();
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const handleLogout = () => {
     Alert.alert('Logout', 'Are you sure you want to logout?', [
@@ -48,6 +51,22 @@ const DashboardScreen = ({ navigation }: any) => {
     // Handle search results if needed
   };
 
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      // Trigger refresh by incrementing the trigger counter
+      // This will be passed as a prop to FileSearchComponent
+      setRefreshTrigger(prev => prev + 1);
+
+      // Add a small delay to show the refresh animation
+      await new Promise<void>(resolve => setTimeout(resolve, 500));
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       {/* Navbar */}
@@ -62,8 +81,21 @@ const DashboardScreen = ({ navigation }: any) => {
       <ScrollView
         style={styles.content}
         contentContainerStyle={{ paddingBottom: scale(80) }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['#3498db']} // Android
+            tintColor="#3498db" // iOS
+            title="Pull to refresh..."
+            titleColor="#3498db"
+          />
+        }
       >
-        <FileSearchComponent onSearchResults={handleSearchResults} />
+        <FileSearchComponent
+          onSearchResults={handleSearchResults}
+          refreshTrigger={refreshTrigger}
+        />
       </ScrollView>
 
       {/* Floating Upload Button */}
