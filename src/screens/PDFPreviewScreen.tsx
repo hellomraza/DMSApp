@@ -24,7 +24,11 @@ const PDFPreviewScreen = ({ navigation, route }: any) => {
       </View>
 
       {/* PDF Viewer */}
-      <PDFViewer source={source} style={styles.pdfViewer} />
+      <PDFViewer
+        source={source}
+        style={styles.pdfViewer}
+        pdfStyle={styles.pdf}
+      />
     </SafeAreaView>
   );
 };
@@ -74,6 +78,9 @@ const styles = StyleSheet.create({
   },
   pdfViewer: {
     flex: 1,
+  },
+  pdf: {
+    width: '100%',
   },
 });
 
