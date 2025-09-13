@@ -1,6 +1,5 @@
 import { render } from '@testing-library/react-native';
 import React from 'react';
-import { View } from 'react-native';
 import PDFCardPreview from '../../../src/components/ui/PDFCardPreview';
 
 // Mock the scale utilities
@@ -15,10 +14,20 @@ jest.mock('../../../src/utils/scale', () => ({
   },
 }));
 
+// Mock react-native-vector-icons
+jest.mock('react-native-vector-icons/MaterialIcons', () => 'MaterialIcons');
+
+// Mock react-native-pixel-perfect
+jest.mock('react-native-pixel-perfect', () => ({
+  create: jest.fn(() => jest.fn(value => value)),
+}));
+
 // Mock react-native-pdf
 jest.mock('react-native-pdf', () => {
   return function MockPdf(props: any) {
-    return React.createElement(View, {
+    const mockReact = require('react');
+    const { View } = require('react-native');
+    return mockReact.createElement(View, {
       testID: 'pdf-component',
       ...props,
     });
@@ -38,12 +47,12 @@ describe('PDFCardPreview', () => {
 
   it('applies custom style correctly', () => {
     const customStyle = { backgroundColor: 'red', height: 200 };
-    const { container } = render(
+    const { getByTestId } = render(
       <PDFCardPreview source={defaultSource} style={customStyle} />,
     );
 
-    // Check that the component renders with custom style
-    expect(container).toBeTruthy();
+    // Check that the component renders
+    expect(getByTestId('pdf-component')).toBeTruthy();
   });
 
   it('passes source prop to PDF component', () => {
@@ -118,9 +127,9 @@ describe('PDFCardPreview', () => {
   });
 
   it('renders without crashing when source is null', () => {
-    const { container } = render(<PDFCardPreview source={{} as any} />);
+    const { getByTestId } = render(<PDFCardPreview source={{} as any} />);
 
-    expect(container).toBeTruthy();
+    expect(getByTestId('pdf-component')).toBeTruthy();
   });
 
   it('renders with empty style prop', () => {
