@@ -261,14 +261,17 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   pickerContainer: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: scale(8),
     backgroundColor: '#fff',
-    overflow: 'hidden',
+    borderRadius: scale(8),
+    borderWidth: scale(1),
+    borderColor: '#ddd',
+    alignItems: 'center',
+    height: scale(50),
   },
   picker: {
-    height: scale(50),
+    height: '100%',
+    width: '100%',
+    color: '#333',
   },
   dateRangeContainer: {
     flexDirection: 'row',
