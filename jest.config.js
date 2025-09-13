@@ -23,6 +23,7 @@ module.exports = {
       displayName: 'utils-tests',
       testEnvironment: 'node',
       testMatch: ['<rootDir>/__tests__/utils/**/*.test.ts'],
+      setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
       moduleNameMapper: {
         '^@/(.*)$': '<rootDir>/src/$1',
       },

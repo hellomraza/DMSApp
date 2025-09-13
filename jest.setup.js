@@ -1,6 +1,7 @@
 // Jest setup file
 /* eslint-env jest */
 
+global.__DEV__ = true;
 // Mock AsyncStorage first, before any imports
 jest.mock('@react-native-async-storage/async-storage', () =>
   require('@react-native-async-storage/async-storage/jest/async-storage-mock'),
