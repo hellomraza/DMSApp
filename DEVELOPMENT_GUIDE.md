@@ -2,7 +2,98 @@
 
 This guide provides essential information for developers working on the DMS React Native application.
 
-## 🏗️ Architecture Overview
+## � UI Components & Form Validation
+
+### Real-time Form Validation
+
+The application implements robust real-time form validation with comprehensive error handling:
+
+#### LoginScreen Validation Features
+
+- **Real-time Input Validation**: Validates mobile number as user types
+- **Touch-based Error Display**: Errors only show after user interacts with field
+- **Smart Button State**: Submit button disabled when validation errors exist
+- **Numeric Input Filtering**: Automatically filters non-numeric characters
+- **Progressive Error Messages**: Different messages for different validation stages
+
+#### Validation Implementation Pattern
+
+```typescript
+// State management for validation
+const [errors, setErrors] = useState<{ mobile_number?: string }>({});
+const [touched, setTouched] = useState<{ mobile_number?: boolean }>({});
+
+// Real-time validation function
+const validateMobileNumber = (mobile: string): string | undefined => {
+  if (!mobile.trim()) return 'Mobile number is required';
+  if (mobile.length < 10) return 'Mobile number must be at least 10 digits';
+  if (mobile.length > 10) return 'Mobile number must be exactly 10 digits';
+  if (!/^[0-9]{10}$/.test(mobile))
+    return 'Please enter a valid 10-digit mobile number';
+  return undefined;
+};
+
+// Input change handler with real-time validation
+const handleMobileNumberChange = (text: string) => {
+  const numericText = text.replace(/[^0-9]/g, '');
+  setFormData({ ...formData, mobile_number: numericText });
+
+  // Only validate if field has been touched
+  if (touched.mobile_number) {
+    const error = validateMobileNumber(numericText);
+    setErrors(prev => ({ ...prev, mobile_number: error }));
+  }
+};
+
+// Blur handler to mark field as touched
+const handleMobileNumberBlur = () => {
+  setTouched(prev => ({ ...prev, mobile_number: true }));
+  const error = validateMobileNumber(formData.mobile_number);
+  setErrors(prev => ({ ...prev, mobile_number: error }));
+};
+```
+
+#### Form Validation Best Practices
+
+1. **Progressive Disclosure**: Only show errors after user interaction
+2. **Real-time Feedback**: Validate as user types for immediate feedback
+3. **Smart Button States**: Disable submit when validation fails
+4. **Input Filtering**: Prevent invalid characters from being entered
+5. **Clear Error Messages**: Provide specific, actionable error messages
+
+### CustomTextInput Component
+
+The `CustomTextInput` component supports comprehensive error handling:
+
+```typescript
+interface CustomTextInputProps extends TextInputProps {
+  label?: string;
+  error?: string; // Error message to display
+  containerStyle?: ViewStyle;
+  inputStyle?: TextStyle;
+  labelStyle?: TextStyle;
+  errorStyle?: TextStyle; // Custom error text styling
+}
+```
+
+#### Usage Example
+
+```typescript
+<CustomTextInput
+  label="Mobile Number"
+  placeholder="Enter your mobile number"
+  value={formData.mobile_number}
+  onChangeText={handleMobileNumberChange}
+  onBlur={handleMobileNumberBlur}
+  keyboardType="numeric"
+  maxLength={10}
+  error={touched.mobile_number ? errors.mobile_number : undefined}
+  labelStyle={styles.label}
+  inputStyle={styles.input}
+/>
+```
+
+## �🏗️ Architecture Overview
 
 ### State Management Strategy
 
@@ -149,6 +240,137 @@ const styles = StyleSheet.create({
 
 export default MyComponent;
 ```
+
+### Form Validation Patterns
+
+The application uses a consistent validation pattern across all forms. Here's the recommended approach:
+
+#### 1. State Setup
+
+```typescript
+// Form data state
+const [formData, setFormData] = useState<FormType>({
+  field1: '',
+  field2: '',
+});
+
+// Error state for each field
+const [errors, setErrors] = useState<{
+  field1?: string;
+  field2?: string;
+}>({});
+
+// Touch tracking for progressive error display
+const [touched, setTouched] = useState<{
+  field1?: boolean;
+  field2?: boolean;
+}>({});
+```
+
+#### 2. Validation Functions
+
+```typescript
+// Individual field validation
+const validateField1 = (value: string): string | undefined => {
+  if (!value.trim()) return 'Field is required';
+  if (value.length < 3) return 'Minimum 3 characters required';
+  // Add more validation rules as needed
+  return undefined;
+};
+
+// Form-level validation
+const validateForm = (): boolean => {
+  const newErrors: typeof errors = {};
+
+  const field1Error = validateField1(formData.field1);
+  if (field1Error) newErrors.field1 = field1Error;
+
+  const field2Error = validateField2(formData.field2);
+  if (field2Error) newErrors.field2 = field2Error;
+
+  setErrors(newErrors);
+  return Object.keys(newErrors).length === 0;
+};
+```
+
+#### 3. Event Handlers
+
+```typescript
+// Input change with real-time validation
+const handleField1Change = (text: string) => {
+  // Apply input filtering if needed
+  const filteredText = text.replace(/[^a-zA-Z0-9]/g, '');
+
+  setFormData(prev => ({ ...prev, field1: filteredText }));
+
+  // Only validate if field has been touched
+  if (touched.field1) {
+    const error = validateField1(filteredText);
+    setErrors(prev => ({ ...prev, field1: error }));
+  }
+};
+
+// Blur handler to mark field as touched
+const handleField1Blur = () => {
+  setTouched(prev => ({ ...prev, field1: true }));
+  const error = validateField1(formData.field1);
+  setErrors(prev => ({ ...prev, field1: error }));
+};
+
+// Submit handler
+const handleSubmit = async () => {
+  // Mark all fields as touched
+  setTouched({
+    field1: true,
+    field2: true,
+  });
+
+  // Validate entire form
+  if (!validateForm()) {
+    return; // Prevent submission if validation fails
+  }
+
+  // Proceed with submission
+  try {
+    await submitData(formData);
+  } catch (error) {
+    // Handle submission error
+  }
+};
+```
+
+#### 4. UI Integration
+
+```typescript
+<CustomTextInput
+  label="Field 1"
+  value={formData.field1}
+  onChangeText={handleField1Change}
+  onBlur={handleField1Blur}
+  error={touched.field1 ? errors.field1 : undefined}
+/>
+
+<CustomButton
+  title="Submit"
+  onPress={handleSubmit}
+  disabled={
+    isSubmitting ||
+    Object.values(errors).some(error => !!error) ||
+    Object.values(formData).some(value => !value.trim())
+  }
+/>
+```
+
+#### 5. Best Practices
+
+- **Progressive Disclosure**: Only show errors after user interaction
+- **Real-time Feedback**: Validate as user types for immediate feedback
+- **Input Filtering**: Filter invalid characters before setting state
+- **Smart Button States**: Disable submit when validation fails
+- **Consistent Error Messages**: Use clear, actionable error messages
+- **Accessibility**: Ensure error messages are accessible to screen readers
+
+For more detailed information, see the [Real-time Validation Guide](REAL_TIME_VALIDATION_GUIDE.md).
 
 ### Hook Development
 

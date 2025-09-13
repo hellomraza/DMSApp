@@ -7,6 +7,9 @@ A comprehensive mobile application built with React Native that allows users to 
 ### Authentication ✅
 
 - **OTP-Based Login**: Secure login using mobile number and OTP verification
+- **Real-time Input Validation**: Progressive form validation with immediate feedback
+- **Smart Error Handling**: Touch-based error display with specific error messages
+- **Input Filtering**: Automatic filtering of invalid characters (numeric-only input)
 - **Token-based Authentication**: JWT token storage for authenticated requests
 - **Session Management**: Persistent login state with Redux Persist
 - **Auto Rehydration**: Automatic state restoration on app restart
