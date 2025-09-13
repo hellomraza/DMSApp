@@ -6,11 +6,11 @@ import { scale, spacing } from '../../utils/scale';
 interface PDFViewerProps {
   source: Source;
   style?: any;
+  pdfStyle?: any;
 }
 
-const PDFViewer: React.FC<PDFViewerProps> = ({ source, style }) => {
+const PDFViewer: React.FC<PDFViewerProps> = ({ source, style, pdfStyle }) => {
   console.log('PDFViewer: Initializing with source:', source);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pageCount, setPageCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -22,12 +22,14 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ source, style }) => {
       'pages',
     );
     setPageCount(numberOfPages);
-    setLoading(false);
     setError(null);
   };
 
-  const handlePageChanged = (page: number) => {
+  const handlePageChanged = (page: number, numberOfPages: number) => {
     console.log('PDFViewer: PDF page changed to:', page);
+    if (numberOfPages && numberOfPages !== pageCount) {
+      setPageCount(numberOfPages);
+    }
     setCurrentPage(page);
   };
 
@@ -53,7 +55,6 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ source, style }) => {
     }
 
     setError(errorMessage);
-    setLoading(false);
   };
 
   const handleLoadProgress = (percent: number) => {
@@ -84,7 +85,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ source, style }) => {
             onPageChanged={handlePageChanged}
             onError={handleError}
             onLoadProgress={handleLoadProgress}
-            style={styles.pdf}
+            style={[styles.pdf, pdfStyle]}
             trustAllCerts={true}
             enablePaging={true}
             enableRTL={false}
@@ -102,7 +103,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ source, style }) => {
             renderActivityIndicator={() => <View />} // We handle loading ourselves
           />
 
-          {!loading && !error && pageCount > 0 && (
+          {!error && pageCount > 0 && (
             <View style={styles.pageInfo}>
               <Text style={styles.pageInfoText}>
                 Page {currentPage} of {pageCount}
