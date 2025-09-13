@@ -1,14 +1,14 @@
 // Jest setup file
 /* eslint-env jest */
 
-// Mock react-native modules
-jest.mock('react-native-vector-icons/MaterialIcons', () => 'MaterialIcons');
-jest.mock('react-native-vector-icons/Ionicons', () => 'Ionicons');
-
-// Mock AsyncStorage
+// Mock AsyncStorage first, before any imports
 jest.mock('@react-native-async-storage/async-storage', () =>
   require('@react-native-async-storage/async-storage/jest/async-storage-mock'),
 );
+
+// Mock react-native modules
+jest.mock('react-native-vector-icons/MaterialIcons', () => 'MaterialIcons');
+jest.mock('react-native-vector-icons/Ionicons', () => 'Ionicons');
 
 // Mock react-native-pixel-perfect
 jest.mock('react-native-pixel-perfect', () => ({
