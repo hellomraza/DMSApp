@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import Pdf, { Source } from 'react-native-pdf';
 import { scale, spacing } from '../../utils/scale';
 
@@ -9,29 +9,19 @@ interface PDFCardPreviewProps {
 }
 
 const PDFCardPreview: React.FC<PDFCardPreviewProps> = ({ source, style }) => {
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const handleLoadComplete = () => {
-    setLoading(false);
     setError(null);
   };
 
   const handleError = (err: any) => {
     console.log('PDF Card Preview error:', err);
     setError('PDF preview failed');
-    setLoading(false);
   };
 
   return (
     <View style={[styles.container, style]}>
-      {loading && (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="small" color="#3498db" />
-          <Text style={styles.loadingText}>Loading...</Text>
-        </View>
-      )}
-
       {error && (
         <View style={styles.errorContainer}>
           <Text style={styles.errorIcon}>📕</Text>
