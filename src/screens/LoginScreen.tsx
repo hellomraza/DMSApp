@@ -16,21 +16,67 @@ const LoginScreen = ({ navigation }: any) => {
   const [formData, setFormData] = useState<LoginFormData>({
     mobile_number: '',
   });
+  const [errors, setErrors] = useState<{
+    mobile_number?: string;
+  }>({});
+  const [touched, setTouched] = useState<{
+    mobile_number?: boolean;
+  }>({});
   const generateOTPMutation = useGenerateOTP();
 
-  const validateMobileNumber = (mobile: string): boolean => {
+  const validateMobileNumber = (mobile: string): string | undefined => {
+    if (!mobile.trim()) {
+      return 'Mobile number is required';
+    }
+    if (mobile.length < 10) {
+      return 'Mobile number must be at least 10 digits';
+    }
+    if (mobile.length > 10) {
+      return 'Mobile number must be exactly 10 digits';
+    }
     const mobileRegex = /^[0-9]{10}$/;
-    return mobileRegex.test(mobile);
+    if (!mobileRegex.test(mobile)) {
+      return 'Please enter a valid 10-digit mobile number';
+    }
+    return undefined;
+  };
+
+  const validateForm = (): boolean => {
+    const newErrors: { mobile_number?: string } = {};
+    
+    const mobileError = validateMobileNumber(formData.mobile_number);
+    if (mobileError) {
+      newErrors.mobile_number = mobileError;
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleMobileNumberChange = (text: string) => {
+    // Only allow numeric input
+    const numericText = text.replace(/[^0-9]/g, '');
+    
+    setFormData({ ...formData, mobile_number: numericText });
+    
+    // Real-time validation if field has been touched
+    if (touched.mobile_number) {
+      const error = validateMobileNumber(numericText);
+      setErrors(prev => ({ ...prev, mobile_number: error }));
+    }
+  };
+
+  const handleMobileNumberBlur = () => {
+    setTouched(prev => ({ ...prev, mobile_number: true }));
+    const error = validateMobileNumber(formData.mobile_number);
+    setErrors(prev => ({ ...prev, mobile_number: error }));
   };
 
   const handleGenerateOTP = async () => {
-    if (!formData.mobile_number.trim()) {
-      Alert.alert('Error', 'Please enter your mobile number');
-      return;
-    }
-
-    if (!validateMobileNumber(formData.mobile_number)) {
-      Alert.alert('Error', 'Please enter a valid 10-digit mobile number');
+    // Mark field as touched and validate
+    setTouched({ mobile_number: true });
+    
+    if (!validateForm()) {
       return;
     }
 
@@ -52,7 +98,7 @@ const LoginScreen = ({ navigation }: any) => {
         );
       },
       onError: (error: any) => {
-        console.log(error, 'sdfkljh');
+        console.log(error, 'OTP generation error');
         Alert.alert(
           'Error',
           error?.message || 'Failed to send OTP. Please try again.',
@@ -78,12 +124,12 @@ const LoginScreen = ({ navigation }: any) => {
               label="Mobile Number"
               placeholder="Enter your mobile number"
               value={formData.mobile_number}
-              onChangeText={(text: string) =>
-                setFormData({ ...formData, mobile_number: text })
-              }
+              onChangeText={handleMobileNumberChange}
+              onBlur={handleMobileNumberBlur}
               keyboardType="numeric"
               maxLength={10}
               editable={!generateOTPMutation.isPending}
+              error={touched.mobile_number ? errors.mobile_number : undefined}
               labelStyle={styles.label}
               inputStyle={styles.input}
             />
@@ -92,7 +138,11 @@ const LoginScreen = ({ navigation }: any) => {
               title="Send OTP"
               onPress={handleGenerateOTP}
               loading={generateOTPMutation.isPending}
-              disabled={generateOTPMutation.isPending}
+              disabled={
+                generateOTPMutation.isPending ||
+                !!errors.mobile_number ||
+                !formData.mobile_number.trim()
+              }
             />
           </View>
         </View>
