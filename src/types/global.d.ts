@@ -17,6 +17,22 @@ type OTPFormData = {
   otp: string;
 };
 
+// Form validation types
+type ValidationErrors<T> = {
+  [K in keyof T]?: string;
+};
+
+type TouchedFields<T> = {
+  [K in keyof T]?: boolean;
+};
+
+// Specific validation error types
+type LoginValidationErrors = ValidationErrors<LoginFormData>;
+type LoginTouchedFields = TouchedFields<LoginFormData>;
+
+type OTPValidationErrors = ValidationErrors<OTPFormData>;
+type OTPTouchedFields = TouchedFields<OTPFormData>;
+
 type OTPGenerateRequest = {
   mobile_number: string;
 };
