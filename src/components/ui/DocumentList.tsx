@@ -43,6 +43,9 @@ interface DocumentListProps {
   onDownload: (document: SearchResult) => void;
   onDownloadAll: () => void;
   isPreviewable: (fileType: string) => boolean;
+  downloadedFilesCount: number;
+  totalFilesCount: number;
+  downloadedFiles: Set<string>;
 }
 
 const DocumentList: React.FC<DocumentListProps> = ({
@@ -56,6 +59,9 @@ const DocumentList: React.FC<DocumentListProps> = ({
   onDownload,
   onDownloadAll,
   isPreviewable,
+  downloadedFilesCount,
+  totalFilesCount,
+  downloadedFiles,
 }) => {
   if (isLoading) {
     return <DocumentListSkeleton />;
@@ -78,7 +84,9 @@ const DocumentList: React.FC<DocumentListProps> = ({
             disabled={isDownloadingAll}
           >
             <Text style={styles.downloadAllButtonText}>
-              {isDownloadingAll ? '⬇️ Downloading All...' : 'Download All'}
+              {isDownloadingAll
+                ? `⬇️ Downloading... (${downloadedFilesCount}/${totalFilesCount})`
+                : 'Download All'}
             </Text>
           </TouchableOpacity>
         )}
@@ -95,6 +103,7 @@ const DocumentList: React.FC<DocumentListProps> = ({
               onPreview={onPreview}
               onDownload={onDownload}
               isPreviewable={isPreviewable}
+              isDownloaded={downloadedFiles.has(item.id)}
             />
           )}
           keyExtractor={item => item.id}

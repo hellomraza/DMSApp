@@ -39,6 +39,10 @@ interface DocumentPreviewModalProps {
   onClose: () => void;
   onDownload: (document: SearchResult) => void;
   onOpenPDFFullscreen?: (source: any, title: string) => void;
+  downloadedFilesCount?: number;
+  totalFilesCount?: number;
+  isDownloadingAll?: boolean;
+  isDownloading?: boolean;
 }
 
 const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
@@ -47,6 +51,10 @@ const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
   onClose,
   onDownload,
   onOpenPDFFullscreen,
+  downloadedFilesCount = 0,
+  totalFilesCount = 0,
+  isDownloadingAll = false,
+  isDownloading = false,
 }) => {
   if (!document) return null;
 
@@ -301,7 +309,11 @@ const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({
                 }}
               >
                 <Text style={styles.downloadButtonText}>
-                  📥 Download Document
+                  {isDownloading
+                    ? '⬇️ Downloading...'
+                    : isDownloadingAll
+                    ? `📥 Download Document (${downloadedFilesCount}/${totalFilesCount} downloading)`
+                    : '📥 Download Document'}
                 </Text>
               </TouchableOpacity>
             </View>

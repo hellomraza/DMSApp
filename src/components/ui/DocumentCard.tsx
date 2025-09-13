@@ -39,6 +39,7 @@ interface DocumentCardProps {
   onPreview: (document: SearchResult) => void;
   onDownload: (document: SearchResult) => void;
   isPreviewable: (fileType: string) => boolean;
+  isDownloaded?: boolean;
 }
 
 const { width } = Dimensions.get('window');
@@ -49,6 +50,9 @@ const DocumentCard: React.FC<DocumentCardProps> = ({
   isDownloading,
   downloadProgress,
   onPreview,
+  onDownload,
+  isPreviewable,
+  isDownloaded = false,
 }) => {
   // Format file size
   const formatFileSize = (bytes: number): string => {
@@ -142,6 +146,11 @@ const DocumentCard: React.FC<DocumentCardProps> = ({
         {isDownloading && (
           <View style={styles.downloadingOverlay}>
             <Text style={styles.downloadingText}>⬇️</Text>
+          </View>
+        )}
+        {isDownloaded && !isDownloading && (
+          <View style={styles.downloadedBadge}>
+            <Text style={styles.downloadedText}>✓</Text>
           </View>
         )}
       </View>
@@ -255,6 +264,22 @@ const styles = StyleSheet.create({
   downloadingText: {
     fontSize: fontSize.lg,
     color: '#fff',
+  },
+  downloadedBadge: {
+    position: 'absolute',
+    top: spacing.xs,
+    right: spacing.xs,
+    backgroundColor: '#27ae60',
+    borderRadius: scale(10),
+    width: scale(20),
+    height: scale(20),
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  downloadedText: {
+    fontSize: fontSize.xs,
+    color: '#fff',
+    fontWeight: 'bold',
   },
   infoContainer: {
     flex: 1,

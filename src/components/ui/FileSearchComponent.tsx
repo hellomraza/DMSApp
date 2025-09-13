@@ -1,8 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Alert, Linking, StyleSheet, View } from 'react-native';
+import { Alert, Linking, Platform, StyleSheet, View } from 'react-native';
 import RNFS from 'react-native-fs';
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
+import ReactNativeBlobUtil from 'react-native-blob-util';
 import { apiSwitcher } from '../../services/apiSwitcher';
 import { spacing } from '../../utils/scale';
 import DocumentList from './DocumentList';
@@ -73,6 +75,11 @@ const FileSearchComponent: React.FC<FileSearchComponentProps> = ({
   }>({});
   const [isDownloadingAll, setIsDownloadingAll] = useState(false);
 
+  // Download tracking state
+  const [downloadedFiles, setDownloadedFiles] = useState<Set<string>>(
+    new Set(),
+  );
+
   // New state for showing all docs and filter controls
   const [showFilters, setShowFilters] = useState(false);
   const [allDocuments, setAllDocuments] = useState<SearchResult[]>([]);
@@ -89,6 +96,36 @@ const FileSearchComponent: React.FC<FileSearchComponentProps> = ({
       console.error('Failed to load tags:', error);
     }
   }, []);
+
+  // Load and save downloaded files state
+  const loadDownloadedFiles = useCallback(async () => {
+    try {
+      const savedDownloadedFiles = await AsyncStorage.getItem(
+        'downloadedFiles',
+      );
+      if (savedDownloadedFiles) {
+        const downloadedArray = JSON.parse(savedDownloadedFiles);
+        setDownloadedFiles(new Set(downloadedArray));
+      }
+    } catch (error) {
+      console.error('Failed to load downloaded files state:', error);
+    }
+  }, []);
+
+  const saveDownloadedFiles = useCallback(
+    async (downloadedSet: Set<string>) => {
+      try {
+        const downloadedArray = Array.from(downloadedSet);
+        await AsyncStorage.setItem(
+          'downloadedFiles',
+          JSON.stringify(downloadedArray),
+        );
+      } catch (error) {
+        console.error('Failed to save downloaded files state:', error);
+      }
+    },
+    [],
+  );
 
   // Load all documents on initial load
   const loadAllDocuments = useCallback(async () => {
@@ -136,9 +173,10 @@ const FileSearchComponent: React.FC<FileSearchComponentProps> = ({
       const loadInitialData = async () => {
         await loadAvailableTags();
         await loadAllDocuments();
+        await loadDownloadedFiles();
       };
       loadInitialData();
-    }, [loadAllDocuments, loadAvailableTags]),
+    }, [loadAllDocuments, loadAvailableTags, loadDownloadedFiles]),
   );
 
   // Handle refresh trigger from parent component
@@ -324,10 +362,26 @@ const FileSearchComponent: React.FC<FileSearchComponentProps> = ({
         document.file.name,
       );
 
+      // Mark file as downloaded
+      const newDownloadedFiles = new Set(downloadedFiles).add(document.id);
+      setDownloadedFiles(newDownloadedFiles);
+      await saveDownloadedFiles(newDownloadedFiles);
+
       Alert.alert('Download Complete', `File saved to: ${localPath}`, [
         {
           text: 'Open',
-          onPress: () => Linking.openURL(`file://${localPath}`),
+          onPress: () => {
+            if (!document.file?.type) {
+              return Linking.openURL(`file://${localPath}`);
+            }
+            if (Platform.OS === 'ios') {
+              return ReactNativeBlobUtil.ios.openDocument(localPath);
+            }
+            ReactNativeBlobUtil.android.actionViewIntent(
+              localPath,
+              document.file?.type,
+            );
+          },
         },
         { text: 'OK' },
       ]);
@@ -363,6 +417,7 @@ const FileSearchComponent: React.FC<FileSearchComponentProps> = ({
 
               let successCount = 0;
               const downloadedPaths: string[] = [];
+              const newDownloadedFiles = new Set(downloadedFiles);
 
               // Download all files
               for (let i = 0; i < searchResults.length; i++) {
@@ -375,6 +430,9 @@ const FileSearchComponent: React.FC<FileSearchComponentProps> = ({
                     );
                     downloadedPaths.push(localPath);
                     successCount++;
+                    // Mark file as downloaded and update state in real-time
+                    newDownloadedFiles.add(document.id);
+                    setDownloadedFiles(new Set(newDownloadedFiles));
                   } catch (error) {
                     console.warn(
                       `Failed to download ${document.file.name}:`,
@@ -384,16 +442,27 @@ const FileSearchComponent: React.FC<FileSearchComponentProps> = ({
                 }
               }
 
+              // Save final state
+              await saveDownloadedFiles(newDownloadedFiles);
+
               Alert.alert(
                 'Download Complete',
                 `Successfully downloaded ${successCount} out of ${searchResults.length} files.`,
                 [
                   {
                     text: 'Open Downloads Folder',
-                    onPress: () =>
-                      Linking.openURL(
-                        `file://${RNFS.DocumentDirectoryPath}/Downloads`,
-                      ),
+                    onPress: () => {
+                      if (Platform.OS === 'ios') {
+                        ReactNativeBlobUtil.ios.openDocument(
+                          RNFS.DocumentDirectoryPath + '/Downloads',
+                        );
+                      } else {
+                        ReactNativeBlobUtil.android.actionViewIntent(
+                          RNFS.DownloadDirectoryPath,
+                          'resource/folder',
+                        );
+                      }
+                    },
                   },
                   { text: 'OK' },
                 ],
@@ -468,6 +537,9 @@ const FileSearchComponent: React.FC<FileSearchComponentProps> = ({
           onDownload={handleDownload}
           onDownloadAll={handleDownloadAll}
           isPreviewable={isPreviewable}
+          downloadedFilesCount={downloadedFiles.size}
+          totalFilesCount={searchResults.filter(doc => doc.file).length}
+          downloadedFiles={downloadedFiles}
         />
       </View>
 
@@ -477,6 +549,12 @@ const FileSearchComponent: React.FC<FileSearchComponentProps> = ({
         onClose={() => setShowPreviewModal(false)}
         onDownload={handleDownload}
         onOpenPDFFullscreen={navigation ? handleOpenPDFFullscreen : undefined}
+        downloadedFilesCount={downloadedFiles.size}
+        totalFilesCount={searchResults.filter(doc => doc.file).length}
+        isDownloadingAll={isDownloadingAll}
+        isDownloading={
+          previewDocument ? isDownloading[previewDocument.id] || false : false
+        }
       />
     </>
   );
