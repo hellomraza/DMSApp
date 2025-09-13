@@ -100,7 +100,7 @@ const OTPVerificationScreen = ({ navigation, route }: any) => {
         onError: (error: any) => {
           Alert.alert(
             'Error',
-            error?.response?.data?.message || 'Invalid OTP. Please try again.',
+            error?.message || 'Invalid OTP. Please try again.',
           );
         },
       },
@@ -120,8 +120,7 @@ const OTPVerificationScreen = ({ navigation, route }: any) => {
         onError: (error: any) => {
           Alert.alert(
             'Error',
-            error?.response?.data?.message ||
-              'Failed to resend OTP. Please try again.',
+            error?.message || 'Failed to resend OTP. Please try again.',
           );
         },
       },
@@ -260,6 +259,8 @@ const styles = StyleSheet.create({
   timerText: {
     fontSize: fontSize.base,
     color: '#7f8c8d',
+    width: '100%',
+    textAlign: 'center',
   },
   resendText: {
     fontSize: fontSize.md,
