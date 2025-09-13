@@ -425,7 +425,7 @@ class MockApiService {
       // Create downloads directory
       const downloadDir =
         Platform.OS === 'ios'
-          ? RNFS.MainBundlePath + '/Downloads'
+          ? RNFS.DocumentDirectoryPath + '/Downloads'
           : RNFS.DownloadDirectoryPath;
 
       const dirExists = await RNFS.exists(downloadDir);
