@@ -50,8 +50,6 @@ const DocumentCard: React.FC<DocumentCardProps> = ({
   isDownloading,
   downloadProgress,
   onPreview,
-  onDownload,
-  isPreviewable,
   isDownloaded = false,
 }) => {
   // Format file size
